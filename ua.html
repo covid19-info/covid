@@ -1,0 +1,399 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cases in Ukraine</title>
+
+		<style type="text/css">
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 360px; 
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+	font-family: Verdana, sans-serif;
+	border-collapse: collapse;
+	border: 1px solid #EBEBEB;
+	margin: 10px auto;
+	text-align: center;
+	width: 100%;
+	max-width: 500px;
+}
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+.highcharts-data-table th {
+	font-weight: 600;
+    padding: 0.5em;
+}
+.highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+    padding: 0.5em;
+}
+.highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+
+		</style>
+	</head>
+	<body>
+<script src="http://185.247.141.11/code/highcharts.js"></script>
+<script src="http://185.247.141.11/code/modules/series-label.js"></script>
+<script src="http://185.247.141.11code/modules/exporting.js"></script>
+<script src="http://185.247.141.11code/modules/export-data.js"></script>
+<script src="http://185.247.141.11code/modules/accessibility.js"></script>
+
+<script  src="./PolynomialRegression.js"></script>
+
+
+<script src="big.js"></script>
+<script src="ssci.js"></script>
+
+<script src="customEvents.js"></script>
+
+
+<figure class="highcharts-figure">
+    <div id="container"></div>
+    <p class="highcharts-description">
+        New cases in country.
+    </p>
+</figure>
+
+
+
+
+
+		<script type="text/javascript">
+
+function movingAverage(values, N,roundRes) {
+  var i = 0;
+  var sum = 0;
+  var means = [];
+  for ( i = 0; i < values.length; i++) {
+      means[i] = null;
+  }
+  i=0;
+  for ( n = Math.min(N - 1, values.length); i < n; i++) {
+    sum += values[i];
+  }
+  for (let n = values.length; i < n; i++) {
+    sum += values[i];
+    if (roundRes) { 
+        means[i] = Math.round(sum / N);
+    } else {  
+        means[i] = sum / N;
+    }
+    sum -= values[i - N + 1];
+  }
+  return means;
+}
+
+
+
+
+function buildTimeDataSet(dailyCases,startDate,predictDays) {
+
+var dateList=[];
+var countDate=dailyCases.length;
+
+countDate=dailyCases.length+predictDays;
+
+ var dt = new Date(startDate);
+ var tm= dt.getTime();
+ var msInDay = 1000 * 60 * 60 * 24;
+ for (var i = 0; i < countDate; i++){
+   dt = new Date(tm); 
+   dateList[i]=(dt.getMonth()+1) +'/'+dt.getDate();
+   tm=tm+msInDay;  
+ } 
+
+return dateList;
+}
+
+
+function buildMovingDataSet(dailyCases) {
+  return movingAverage(dailyCases,7,true);
+}
+
+
+
+
+function buildHWSDataSet(dailyCases,predictDays,onDay,calcRange) {
+
+var startPoint=onDay-calcRange;
+    if (startPoint<=0) {startPoint=0;}
+var endPoint=onDay;
+
+
+
+smarr=[];
+for (var i = 0; i < endPoint; i++){
+
+  var  dd=dailyCases[i];
+   if ((dd==null) || (dd==0)) {
+      dd = 0.01;     
+   }
+  if ((i>=startPoint) && (i<endPoint)) {
+      smarr.push([i,dd]);
+  }
+}
+
+
+var fhw = ssci.fore.holtWinter()
+                .period(7)
+                .data(smarr)
+                .x(function(d){ return d[0]; })
+                .y(function(d){ return d[1]; })
+                .level(0.66)
+//                .trend(0.0)
+                .season(1.0);
+               
+fhw();
+
+var calcArr = fhw.outputY();
+
+var forecastHWS = fhw.forecast(predictDays);
+
+for (var i = 0; i < forecastHWS.length; i++){
+   console.log(forecastHWS[i]);
+}
+ 
+predictArrayHWS=[];
+
+for (var i = 0; i < dailyCases.length+predictDays; i++){
+   if (i<endPoint) {
+          predictArrayHWS.push(null);  
+       //   predictArrayHWS.push(Math.round(calcArr[i-7]));
+   } 
+   if ((i>=endPoint) &&  (i<endPoint+predictDays)) {
+      
+      predictArrayHWS.push(Math.round(forecastHWS[i-endPoint][1]));
+   }
+   if (i>=endPoint+predictDays) {
+      predictArrayHWS.push(null);
+   }  
+ }
+
+  return predictArrayHWS;
+}
+
+
+
+
+function builPRDataSet(dailyCases,predictDays,onDay,calcRange) {
+
+var startPoint=onDay-calcRange;
+    if (startPoint<=0) {startPoint=0;}
+var endPoint=onDay;
+
+
+  var someDataA = [];
+ 
+
+  for (var i = 0; i < dailyCases.length; i++){
+   if ((i>=startPoint) && (i<endPoint)) {
+      someDataA.push(new DataPoint(i-startPoint, dailyCases[i]));
+   }
+  } 
+ 
+  var polyA = new PolynomialRegression(someDataA, 4);
+  var termsA = polyA.getTerms();
+  var predictArrayA =[];
+
+  for (var i = 0; i < dailyCases.length+predictDays; i++){
+   if (i<endPoint) {
+       if (i>startPoint) { 
+          predictArrayA.push(null);  
+ //           predictArrayA.push(Math.round(polyA.predictY(termsA,i-startPoint)));
+       }
+       else {        
+          predictArrayA.push(null);
+       }   
+    } 
+    if ((i>=endPoint) &&  (i<endPoint+predictDays)) {
+      predictArrayA.push(Math.round(polyA.predictY(termsA,i-startPoint)));
+    }
+    if (i>=endPoint+predictDays) {
+      predictArrayA.push(null);
+    }  
+  } 
+  return predictArrayA;
+}
+
+
+
+
+
+
+function buildChart2() {
+
+   var dailyCases =  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,0,0,0,0,0,0,0,2,0,0,0,4,7,2,10,15,6,26,0,29,43,51,114,46,119,73,97,149,103,175,153,83,11,143,206,224,311,308,266,325,270,392,397,501,444,343,261,415,467,578,477,478,492,392,401,456,540,455,550,502,418,366,487,507,504,515,522,416,375,402,422,483,528,433,325,260,354,476,442,432,406,259,339,321,477,429,393,468,340,328,483,588,553,550,485,463,394,525,689,683,753,648,656,666,758,829,921,841,735,681,833,940,994,1109,948,917,646,706,664,889,876,914,823,543,564,807,810,819,800,678,612,638,836,848,809,847,731,651,673,829,856,972,1106,920,807,919,1022,1197,1090,1172,1112,990,1061,1271,1318,1453,1489,1199,1008,1158,1433,1592,1732,1847,1637,1464,1616,1967,2134,2106,2328,1984,1802,1658,1670,1974,2438,2481,2096,2141,2079,2504,2430,2723,2836,2107,2174,2411,2551,2582,3144,3103,2476,2462,2905,2958,3584,3228,3240,2966,2675,2884,3497,3372,3565,3833,3130,2671,3627,4027,4069,4633,4661,4140,3774,4348,4753,5397,5804,5728,4768,4420,5133,5590,5062,5992,6410,5231,4766,5469,6719,7053,7517,7014,6088,5426,6677,7474,7342,8312,8752,7959,6754,8899,9524,9850,9721,10746,9397,8687,10179,10611,11057,11787,12524,10681,9832,11968,12496,13357,14575,14580,12079,10945,12287,13882,15331  ] ;
+
+
+
+
+  daysBeforeEnd = 15;
+  predictDays  = 14;
+  startDate= "2020-02-15";
+  calcRange=42;
+  onDay=dailyCases.length;
+  
+  dstime=   buildTimeDataSet(dailyCases,startDate,predictDays);
+  dsmoving= buildMovingDataSet(dailyCases);
+
+  dspr=     builPRDataSet(dailyCases,  predictDays,onDay,calcRange);
+  dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
+  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay,calcRange);
+
+
+  fc = Highcharts.chart('container', {
+
+    title: {
+        text: 'Covid '
+    },
+    chart: {
+                zoomType: 'x'
+    },
+
+    credits: {
+            enabled: false
+        },
+        plotOptions: {
+            series: {
+                showCheckbox: false,
+                selected: true,
+                marker: {
+                     enabled: false
+                }
+            },
+            spline: {
+
+                events: {
+                    legendItemClick: function(event) {
+
+                        this.checkbox.click();
+                        return false;
+                    }
+                },
+                showInLegend: true
+            }
+        },
+
+
+    subtitle: {
+        text: 'Source: '
+    },
+
+    yAxis: {
+        title: {
+            text: 'Number of daily cases'
+        }
+    },
+
+    
+    xAxis: {
+    categories: dstime,
+    crosshair: {
+    	enabled: true,
+      width: 1, 
+    }
+  },
+
+    series: [{
+        name: 'Daily new cases',
+        data: dailyCases,
+        point: {
+                events: {
+                    click: function () {
+                        var chart = this.series.chart;
+                        
+                        fc.xAxis[0].update({
+                categories: buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value))
+            });
+
+                        
+                        fc.series[2].setData(builPRDataSet(dailyCases,  parseInt(document.getElementById('pred').value),this.x+1, calcRange));
+                        fc.series[3].setData(builPRDataSet(dsmoving,    parseInt(document.getElementById('pred').value),this.x+1, calcRange));
+                        fc.series[4].setData(buildHWSDataSet(dailyCases,parseInt(document.getElementById('pred').value),this.x+1, calcRange));
+                        
+                    }
+                }
+            },
+            
+   
+    },{
+        name: '7 day moving average',
+       color: 'green', 
+       visible: false, 
+       data: dsmoving
+       
+    },{
+  
+        name: 'pr  ',
+       color: 'red',
+        label: {
+        enabled: false
+        }, 
+       data: dspr
+    },{
+
+        name: 'pr-ma',
+       color: 'red',
+      label: {
+      enabled: false
+    }, 
+       data: dsprmov
+    },{
+
+        name: 'hws',
+       color: 'brown',
+        label: {
+        enabled: false
+    }, 
+       data: dvHWS
+    }
+
+],
+
+ 
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+
+  return fc;
+
+}
+
+
+
+
+</script>
+forecast (days) <input id="pred"    name="pred"    type="text" size="3" value="14"  >
+<div>
+  <script>
+    mm = buildChart2();
+  </script>
+</div>
+
+
+
+	</body>
+</html>

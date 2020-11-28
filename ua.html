@@ -43,7 +43,8 @@
 		</style>
 	</head>
 	<body>
-<script src="highcharts.js"></script>
+<script src="code/highcharts.js"></script>
+
 <script  src="./PolynomialRegression.js"></script>
 
 
@@ -345,6 +346,32 @@ var endPoint=onDay;
   return predictArrayA;
 }
 
+function findBestStart(realDataSet,startPoint)
+{
+     
+  //  up 14 days before start 
+  //  21 days forecast 
+  //  14+ 21= 35 
+
+  if (startPoint<16) {
+    return startPoint;
+  } 
+  var minRMSE=100000;
+  var minStartPoint=startPoint; 
+  var currStartPoint=startPoint; 
+  
+  for (var i = 2; i < 16; i++){
+    currForDataSet = buildHWSDataSet(realDataSet,21+i,startPoint-i, parseInt(document.getElementById('calcRange').value));     
+
+    currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
+    if (minRMSE > currRMSE) {
+      minRMSE = currRMSE;
+      minStartPoint = startPoint-i;
+    }
+  }
+  return  minStartPoint;
+}
+
 
 function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
 
@@ -467,8 +494,6 @@ function buildChart2(range,forecast) {
     },
 
 
-
-
     credits: {
             enabled: false
         },
@@ -526,12 +551,21 @@ function buildChart2(range,forecast) {
                 categories: buildTimeDataSet(dailyCases,startDate,numPred)
             });
 
-                        
-                        dvHWS=buildHWSDataSet(dailyCases,numPred,this.x+1, parseInt(document.getElementById('calcRange').value));                        
-                        fc.series[2].setData(dvHWS);                        
+                var currentX=this.x+1;
+                 
+                if  (document.getElementById('autoSet').checked==true) {
+                    currentX=findBestStart(dailyCases,currentX);
+                    numPred=numPred+this.x+1-currentX;
+                } 
+                fc.series[2].setData(builPRDataSet(dailyCases,  numPred,currentX, parseInt(document.getElementById('calcRange').value)));
+                fc.series[3].setData(builPRDataSet(dsmoving, numPred,currentX, parseInt(document.getElementById('calcRange').value)));
 
-   document.getElementById('rmse').value=RMSE_NORM(dailyCases.slice(this.x+1,this.x+1+numPred),dvHWS.slice(this.x+1,this.x+1+numPred));
-   showDataTable(buildTimeDataSet(dailyCases,startDate,numPred),dailyCases,dvHWS);
+                dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
+                   
+                fc.series[2].setData(dvHWS);                        
+
+                document.getElementById('rmse').value=RMSE_NORM(dailyCases.slice(currentX,currentX+numPred),dvHWS.slice(currentX,currentX+ numPred));
+                showDataTable(buildTimeDataSet(dailyCases,startDate,numPred),dailyCases,dvHWS);
 
                     }
                 }
@@ -588,12 +622,19 @@ function buildChart2(range,forecast) {
 <div align="center">
 Forecast (days)       <input id="pred"      name="pred"       type="number" size="3" value="14" min="7"  max="42" step="7"  >
 Back days (data use)  <input id="calcRange" name="calcRange"  type="number" size="3" value="42" min="14" max="42" step="7"  >
-<input type="button" id="rebuild" value="Reset" onclick="
-    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
 
+<label for="autoSet">Auto</label>
+<input id="autoSet" name="autoSet"  type="checkbox" value="on">
+
+<input type="button" id="rebuild" value="Reset" 
+onclick="
+    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
   " >
+
 RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >
+
 </div>
+
 <div>
   <script>
     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));

@@ -557,9 +557,7 @@ function buildChart2(range,forecast) {
                     currentX=findBestStart(dailyCases,currentX);
                     numPred=numPred+this.x+1-currentX;
                 } 
-                fc.series[2].setData(builPRDataSet(dailyCases,  numPred,currentX, parseInt(document.getElementById('calcRange').value)));
-                fc.series[3].setData(builPRDataSet(dsmoving, numPred,currentX, parseInt(document.getElementById('calcRange').value)));
-
+                
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
                    
                 fc.series[2].setData(dvHWS);                        

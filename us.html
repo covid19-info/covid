@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Cases in USA</title>
+		<title>Cases</title>
 
 		<style type="text/css">
 .highcharts-figure, .highcharts-data-table table {
@@ -43,7 +43,11 @@
 		</style>
 	</head>
 	<body>
-<script src="highcharts.js"></script>
+<script src="code/highcharts.js"></script>
+<script src="code/modules/series-label.js"></script>
+<script src="code/modules/exporting.js"></script>
+<script src="code/modules/export-data.js"></script>
+<script src="code/modules/accessibility.js"></script>
 
 <script  src="./PolynomialRegression.js"></script>
 
@@ -203,12 +207,12 @@ function percentDataSet(values) {
             means[i]=0;
             continue;
       }    
-      if (values[i]>values[i-1]) {
-          means[i]=Math.round((values[i]/values[i-1]-1)*100); 
-      }
-      if (values[i]<values[i-1]) {
-          means[i]= Math.round(((1-(values[i-1]/values[i]))*100)); 
-        }
+//      if (values[i]>values[i-1]) {
+          means[i]=Math.round(((values[i]-values[i-1])/((values[i]+values[i-1])/2))*1000)/10; 
+//      }
+//      if (values[i]<values[i-1]) {
+//          means[i]= Math.round(((1-(values[i-1]/values[i]))*100)); 
+//        }
       if (values[i]==values[i-1]) {
         means[i]= 0; 
       }
@@ -359,6 +363,43 @@ function findBestStart(realDataSet,startPoint)
   var minRMSE=100000;
   var minStartPoint=startPoint; 
   var currStartPoint=startPoint; 
+//  var backdays=parseInt(document.getElementById('calcRange').value);
+  var forvardForecast=21;
+
+  for (var j = 0; j<14; j++) {
+//     backdays=parseInt(document.getElementById('calcRange').value)-j;
+     backdays=42-j;
+    
+   
+     for (var i = 2; i < 16-j; i++){
+      
+      currForDataSet = buildHWSDataSet(realDataSet,forvardForecast+i-j,startPoint-i, backdays);     
+
+      currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
+      if (minRMSE > currRMSE) {
+        minRMSE = currRMSE;
+        minStartPoint = startPoint-i;
+        minBackdays=backdays;
+      }
+    }
+  }
+  document.getElementById('calcRange').value=minBackdays;
+  return  minStartPoint;
+}
+
+function findBestStartOld(realDataSet,startPoint)
+{
+     
+  //  up 14 days before start 
+  //  21 days forecast 
+  //  14+ 21= 35 
+
+  if (startPoint<16) {
+    return startPoint;
+  } 
+  var minRMSE=100000;
+  var minStartPoint=startPoint; 
+  var currStartPoint=startPoint; 
   
   for (var i = 2; i < 16; i++){
     currForDataSet = buildHWSDataSet(realDataSet,21+i,startPoint-i, parseInt(document.getElementById('calcRange').value));     
@@ -371,6 +412,8 @@ function findBestStart(realDataSet,startPoint)
   }
   return  minStartPoint;
 }
+
+
 
 
 function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
@@ -441,7 +484,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
 
 var dstime=[];
 
-var dailyCases =  [null,0,0,0,0,0,20,0,0,18,4,3,0,3,5,7,25,24,34,63,98,116,106,163,290,307,386,599,651,891,1107,1972,3191,4816,6004,5110,9594,10882,11621,13643,17916,19088,19314,20132,23743,25798,27374,30709,33086,34565,26179,32455,34964,32968,34018,34361,30041,26172,27808,29010,31600,30359,33445,28747,25690,29414,26906,31418,31447,36514,34712,25879,23932,25891,28956,31383,36312,29059,26395,25755,25560,25674,29767,29265,25615,20296,19441,23761,22689,27849,27707,23580,19585,23927,21098,22591,28870,24868,21677,19328,19696,19911,21068,23190,25739,23632,20497,19297,22535,20800,23046,25569,23018,19345,19175,19240,21237,23444,27649,25882,20523,21187,25890,26400,28346,34118,33745,26594,31883,36534,39083,40748,47971,44075,41270,45946,47090,53174,58513,60495,50867,46909,51691,56845,63388,62719,73586,63213,59575,66622,67168,73344,74710,76115,64450,66326,63657,68859,73023,71273,79440,69444,57482,62396,66257,66229,70260,73539,60048,50136,49867,54902,56242,60192,63954,57364,49291,49739,54974,56299,54655,61690,53449,38663,41076,44190,45586,46164,50968,45428,33774,41031,40774,45670,46734,50156,42837,35525,38641,42574,41541,45937,53443,43109,32751,25906,28800,35765,40307,47146,39810,33582,38433,37017,40800,46895,51936,44125,33750,36814,36101,42087,45797,53983,43584,34140,37403,44492,41218,47753,52380,50686,34253,41446,44785,49576,57460,61291,54577,42664,46161,51944,59962,66618,72168,58574,52123,59127,63222,64732,75100,81834,80734,64238,70269,76628,82066,92169,101703,88324,77044,89352,95166,108612,123972,132974,128010,110323,127569,144972,144547,162467,188185,160407,146838,162689,161967,176869,192614,204163,175538,151588,174906,177103,183553,158533,167818,145528,138096];
+var dailyCases =  [null,0,0,0,0,0,20,0,0,18,4,3,0,3,5,7,25,24,34,63,98,116,106,163,290,307,386,598,651,891,1107,1972,3191,4816,6004,5110,9594,10882,11621,13643,17916,19088,19314,20132,23743,25798,27374,30709,33086,34565,26179,32455,34964,32967,34018,34361,30041,26172,27808,29010,31600,30359,33445,28747,25690,29414,26906,31418,31447,36514,34712,25879,23932,25891,28956,31383,36312,29059,26395,25755,25560,25673,29767,29266,25615,20295,19442,23761,22689,27849,27707,23580,19585,23927,21098,22591,28870,24868,21677,19328,19696,19911,21068,23190,25739,23632,20497,19297,22535,20800,23046,25569,23018,19345,19175,19240,21237,23444,27649,25882,20523,21187,25890,26400,28346,34118,33745,26594,31883,36534,39083,40748,47971,44075,41270,45946,47090,53173,58513,60495,50867,46909,51691,56845,63388,62719,73586,63213,59575,66622,67168,73344,74710,76115,64450,66326,63657,68859,73023,71273,79440,69444,57482,62396,66257,66229,70260,73539,60048,50136,49867,54902,56242,60192,63954,57364,49291,49739,54974,56299,54655,61690,53449,38663,41076,44190,45586,46164,50968,45428,33774,41031,40774,45670,46734,50156,42837,35525,38641,42574,41541,45937,53443,43109,32751,25906,28800,35765,40307,47146,39810,33582,38433,37017,40800,46895,51936,44125,33750,36814,36101,42087,45797,53982,43585,34141,37403,44496,41213,47754,52381,50685,34253,41445,44785,49578,57460,61297,54575,42664,46160,51942,59962,66618,72168,58574,52123,59125,63221,64732,75100,81834,80733,64238,70269,76628,82066,92170,101702,88324,77041,89352,95168,108613,123982,132984,128002,110318,127569,144972,144542,162463,188188,160424,146838,162690,161976,176864,192611,204166,175541,151604,174959,177120,183597,161394,166060,146593,144613,166904,184198,206073,218576]  ;
 
 
 var dvHWS=[];
@@ -468,18 +511,24 @@ function buildChart2(range,forecast) {
   
   forTrend= linearRegressionDataSet(dsmoving,calcRecur);
   dspercent = movingAverage(percentDataSet(dsmoving),calcRecur,true);
+  dspercent = percentDataSet(dsmoving,calcRecur,true);
+
 // dspercent =  dsmoving;
 
 
   dspr=     builPRDataSet(dailyCases,  predictDays,onDay,calcRange);
   dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
-  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay,calcRange);
+
+  onDay=    findBestStart(dailyCases,onDay);
+predictDays=predictDays+dailyCases.length-onDay;
+  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
+
 
 
   fc = Highcharts.chart('container', {
 
     title: {
-        text: 'Covid cases: daily and forecast in USA'
+        text: 'Covid cases: daily and forecast'
     },
     chart: {
         zoomType: 'x',
@@ -556,6 +605,9 @@ function buildChart2(range,forecast) {
                 if  (document.getElementById('autoSet').checked==true) {
                     currentX=findBestStart(dailyCases,currentX);
                     numPred=numPred+this.x+1-currentX;
+                    if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
+                        numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
+                    }
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        

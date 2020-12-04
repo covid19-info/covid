@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Cases in Poland</title>
+		<title>Cases</title>
 
 		<style type="text/css">
 .highcharts-figure, .highcharts-data-table table {
@@ -43,7 +43,11 @@
 		</style>
 	</head>
 	<body>
-<script src="highcharts.js"></script>
+<script src="code/highcharts.js"></script>
+<script src="code/modules/series-label.js"></script>
+<script src="code/modules/exporting.js"></script>
+<script src="code/modules/export-data.js"></script>
+<script src="code/modules/accessibility.js"></script>
 
 <script  src="./PolynomialRegression.js"></script>
 
@@ -203,12 +207,12 @@ function percentDataSet(values) {
             means[i]=0;
             continue;
       }    
-      if (values[i]>values[i-1]) {
-          means[i]=Math.round((values[i]/values[i-1]-1)*100); 
-      }
-      if (values[i]<values[i-1]) {
-          means[i]= Math.round(((1-(values[i-1]/values[i]))*100)); 
-        }
+//      if (values[i]>values[i-1]) {
+          means[i]=Math.round(((values[i]-values[i-1])/((values[i]+values[i-1])/2))*1000)/10; 
+//      }
+//      if (values[i]<values[i-1]) {
+//          means[i]= Math.round(((1-(values[i-1]/values[i]))*100)); 
+//        }
       if (values[i]==values[i-1]) {
         means[i]= 0; 
       }
@@ -359,6 +363,43 @@ function findBestStart(realDataSet,startPoint)
   var minRMSE=100000;
   var minStartPoint=startPoint; 
   var currStartPoint=startPoint; 
+//  var backdays=parseInt(document.getElementById('calcRange').value);
+  var forvardForecast=21;
+
+  for (var j = 0; j<14; j++) {
+//     backdays=parseInt(document.getElementById('calcRange').value)-j;
+     backdays=42-j;
+    
+   
+     for (var i = 2; i < 16-j; i++){
+      
+      currForDataSet = buildHWSDataSet(realDataSet,forvardForecast+i-j,startPoint-i, backdays);     
+
+      currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
+      if (minRMSE > currRMSE) {
+        minRMSE = currRMSE;
+        minStartPoint = startPoint-i;
+        minBackdays=backdays;
+      }
+    }
+  }
+  document.getElementById('calcRange').value=minBackdays;
+  return  minStartPoint;
+}
+
+function findBestStartOld(realDataSet,startPoint)
+{
+     
+  //  up 14 days before start 
+  //  21 days forecast 
+  //  14+ 21= 35 
+
+  if (startPoint<16) {
+    return startPoint;
+  } 
+  var minRMSE=100000;
+  var minStartPoint=startPoint; 
+  var currStartPoint=startPoint; 
   
   for (var i = 2; i < 16; i++){
     currForDataSet = buildHWSDataSet(realDataSet,21+i,startPoint-i, parseInt(document.getElementById('calcRange').value));     
@@ -371,6 +412,8 @@ function findBestStart(realDataSet,startPoint)
   }
   return  minStartPoint;
 }
+
+
 
 
 function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
@@ -441,7 +484,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
 
 var dstime=[];
 
-var dailyCases =  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,4,1,5,6,5,9,20,17,36,21,52,61,49,68,70,111,98,115,152,150,170,168,249,224,193,256,243,392,437,244,475,311,435,357,370,380,401,318,260,268,380,336,461,363,545,306,263,313,342,381,381,344,285,316,422,237,228,270,318,313,425,309,307,319,285,345,330,595,283,411,401,241,272,356,383,471,404,476,312,395,305,443,399,352,330,416,215,379,230,292,361,362,576,575,599,400,282,359,376,440,375,396,407,506,314,301,304,311,296,300,294,298,276,319,193,247,239,382,371,259,314,231,205,257,277,262,265,305,370,299,267,264,333,353,339,358,279,399,380,418,458,584,443,337,502,512,615,657,658,548,575,680,640,726,809,843,624,619,551,715,811,832,771,594,595,597,735,767,903,900,581,548,763,729,887,791,759,631,502,550,595,612,691,567,437,302,400,421,506,594,603,502,377,605,600,837,757,1002,910,748,711,974,1136,1587,1584,1350,1306,1326,1552,1967,2292,2367,1934,2006,2236,3003,4280,4739,5300,4178,4394,5068,6526,8099,7705,9622,8536,7482,9291,10040,12107,13632,13628,11742,10241,16300,18820,20156,21629,21897,17171,15578,19364,24692,27143,27086,27875,24785,21713,25454,25221,22683,24051,25571,21854,20816,19152,19883,23975,22464,23602,18467,37596,10133,15365,16931,17059,15177,11486] ;
+var dailyCases =  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,4,1,5,6,5,9,20,17,36,21,52,61,49,68,70,111,98,115,152,150,170,168,249,224,193,256,243,392,437,244,475,311,435,357,370,380,401,318,260,268,380,336,461,363,545,306,263,313,342,381,381,344,285,316,422,237,228,270,318,313,425,309,307,319,285,345,330,595,283,411,401,241,272,356,383,471,404,476,312,395,305,443,399,352,330,416,215,379,230,292,361,362,576,575,599,400,282,359,376,440,375,396,407,506,314,301,304,311,296,300,294,298,276,319,193,247,239,382,371,259,314,231,205,257,277,262,265,305,370,299,267,264,333,353,339,358,279,399,380,418,458,584,443,337,502,512,615,657,658,548,575,680,640,726,809,843,624,619,551,715,811,832,771,594,595,597,735,767,903,900,581,548,763,729,887,791,759,631,502,550,595,612,691,567,437,302,400,421,506,594,603,502,377,605,600,837,757,1002,910,748,711,974,1136,1587,1584,1350,1306,1326,1552,1967,2292,2367,1934,2006,2236,3003,4280,4739,5300,4178,4394,5068,6526,8099,7705,9622,8536,7482,9291,10040,12107,13632,13628,11742,10241,16300,18820,20156,21629,21897,17171,15578,19364,24692,27143,27086,27875,24785,21713,25454,25221,22683,24051,25571,21854,20816,19152,19883,23975,22464,23602,18467,37596,10133,15365,16931,17059,15177,11486,5741,9073,13880,14835]    ;
 
 
 var dvHWS=[];
@@ -468,18 +511,24 @@ function buildChart2(range,forecast) {
   
   forTrend= linearRegressionDataSet(dsmoving,calcRecur);
   dspercent = movingAverage(percentDataSet(dsmoving),calcRecur,true);
+  dspercent = percentDataSet(dsmoving,calcRecur,true);
+
 // dspercent =  dsmoving;
 
 
   dspr=     builPRDataSet(dailyCases,  predictDays,onDay,calcRange);
   dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
-  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay,calcRange);
+
+  onDay=    findBestStart(dailyCases,onDay);
+predictDays=predictDays+dailyCases.length-onDay;  
+dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
+
 
 
   fc = Highcharts.chart('container', {
 
     title: {
-        text: 'Covid cases: daily and forecast in Poland'
+        text: 'Covid cases: daily and forecast'
     },
     chart: {
         zoomType: 'x',
@@ -556,6 +605,9 @@ function buildChart2(range,forecast) {
                 if  (document.getElementById('autoSet').checked==true) {
                     currentX=findBestStart(dailyCases,currentX);
                     numPred=numPred+this.x+1-currentX;
+                    if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
+                        numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
+                    }
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        

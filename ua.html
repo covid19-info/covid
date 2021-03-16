@@ -473,9 +473,9 @@ function buildChart2(range,forecast) {
   
   dstime=   buildTimeDataSet(dailyCases,startDate,predictDays);
   
-//  dsmoving= movingAverage(dailyCases,calcRecur,true);
+  dsmoving= movingAverage(dailyCases,calcRecur,true);
 
-  dsmoving= movingAverage(dailyCases,14,true);
+//  dsmoving= movingAverage(dailyCases,14,true);
 
   
   forTrend= linearRegressionDataSet(dsmoving,calcRecur);

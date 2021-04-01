@@ -622,7 +622,7 @@ predictDays=predictDays+dailyCases.length-onDay;
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
-                   
+                  dvHWS= replaceMinus(dvHWS);   
                 fc.series[2].setData(dvHWS);                        
 
                 document.getElementById('rmse').value=RMSE_NORM(dailyCases.slice(currentX,currentX+numPred),dvHWS.slice(currentX,currentX+ numPred));

@@ -307,7 +307,19 @@ for (var i = 0; i < dailyCases.length+predictDays; i++){
 }
 
 
+function replaceMinus(dataSet) {
 
+  var tmpResult=[];
+  for (var i = 0; i < dataSet.length; i++){
+   if (dataSet[i]<0) {
+	tmpResult[i]=0;
+   else {
+   	tmpResult[i]=dataSet[i];
+  
+   } 	   
+	
+   return tmpResult;
+}
 
 function builPRDataSet(dailyCases,predictDays,onDay,calcRange) {
 

@@ -533,7 +533,7 @@ function buildChart2(range,forecast) {
   onDay=    findBestStart(dailyCases,onDay);
 predictDays=predictDays+dailyCases.length-onDay;  
 dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
-
+dvHWS = replaceMinus(dvHWS);
 
 
   fc = Highcharts.chart('container', {

@@ -366,7 +366,9 @@ function findBestStart(realDataSet,startPoint)
      backdays=42-j;
     
    
-     for (var i = 3; i < 16-j; i++){
+//     for (var i = 2; i < 16-j; i++){
+          for (var i = 3; i < 14; i++){
+	     
       
       currForDataSet = buildHWSDataSet(realDataSet,forvardForecast+i-j,startPoint-i, backdays);     
 

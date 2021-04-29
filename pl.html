@@ -244,6 +244,18 @@ function buildMovingDataSet(dailyCases) {
   return movingAverage(dailyCases,7,true);
 }
 
+function replaceMinus(dataSet) {
+
+  var tmpResult=[];
+  for (var i = 0; i < dataSet.length; i++){
+   if (dataSet[i]<0) {
+	    tmpResult[i]=0;
+   }else {
+   	  tmpResult[i]=dataSet[i];
+   } 	   
+	}
+   return tmpResult;
+}
 
 
 
@@ -609,7 +621,7 @@ dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getEle
                     }
                 } 
                 
-                dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
+                dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                     dvHWS=  replaceMinus(   dvHWS );   
                    
                 fc.series[2].setData(dvHWS);                        
 

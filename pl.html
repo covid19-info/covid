@@ -462,6 +462,9 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
         currReal='';
       }  else {
         currReal=realDataSet[i];
+        if (currReal==0) {
+	  currReal='n/a';
+	}
       }
       tempStr=tempStr+'<td>'+currReal+'</td>';
       realTmp.push(currReal); 

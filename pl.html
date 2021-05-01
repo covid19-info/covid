@@ -447,7 +447,11 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
   tempStr="";
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
-      tempStr=tempStr+'<td>'+forecastDataSet[i]+'</td>';
+	currForec=forecastDataSet[i];   
+	if (currForec==0) {
+	  currForec='n/a';
+	}	
+      tempStr=tempStr+'<td>'+currForec+'</td>';
       forTmp.push(forecastDataSet[i]);
     } 
   }
@@ -462,9 +466,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
         currReal='';
       }  else {
         currReal=realDataSet[i];
-        if (currReal==0) {
-	  currReal='n/a';
-	}
+        
       }
       tempStr=tempStr+'<td>'+currReal+'</td>';
       realTmp.push(currReal); 

@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Cases</title>
+		<title>Cases in US</title>
 
 		<style type="text/css">
 .highcharts-figure, .highcharts-data-table table {
@@ -54,9 +54,8 @@
 
 <script src="customEvents.js"></script>
 
-
 <figure class="highcharts-figure">
-	
+
 <button> <a href="index.html">HOME</a> </button>
 
     <div id="container"></div>
@@ -65,10 +64,7 @@
     </p>
 </figure>
 
-
-
-
-
+	
 		<script type="text/javascript">
 
 function linearRegression(data) {
@@ -240,9 +236,83 @@ return dateList;
 }
 
 
+function buildHolidaysDataSet(startDate,timeDataSet,holidaysList) {
+  
+  var found=false;
+  var dateList=[];
+  var dt = new Date(startDate);
+  var tm= dt.getTime();
+  var msInDay = 1000 * 60 * 60 * 24;
+  for (var i = 0; i < timeDataSet.length; i++){
+    dt = new Date(tm);
+    found=false;
+    for (var j = 0; j < holidaysList.length; j++){
+      dtHL = new Date(holidaysList[j]);
+      
+      if ((dtHL.getMonth() == dt.getMonth()) && (dtHL.getDate() == dt.getDate()) && (dtHL.getFullYear() == dt.getFullYear()) ) {
+        found=true;
+      }
+    }
+ 
+    dateList[i]=found;
+    tm=tm+msInDay;  
+  } 
+return dateList;
+}
+
+
+
+function buildHolidaysWeeks(startDate,timeDataSet) {
+  
+  var fillWeek=0;
+  var found=false;
+  var dateList=[];
+  var dt = new Date(startDate);
+  var tm= dt.getTime();
+  var msInDay = 1000 * 60 * 60 * 24;
+  for (var i = 0; i < timeDataSet.length; i++){
+    dateList[i]=null;
+  }
+  for (var i = 0; i < timeDataSet.length; i++){
+    dt = new Date(tm);
+    
+    fillWeek=0;
+    if (timeDataSet[i]==true) {
+        if (dt.getDay()==6) {
+            fillWeek=i+1;
+        } else {
+            fillWeek=i-dt.getDay();  
+        } 
+        for (var j = 0; j < 7; j++){
+          dateList[i+j]=1;
+        }          
+    }
+
+    tm=tm+msInDay;  
+  } 
+return dateList;
+}
+
+
 function buildMovingDataSet(dailyCases) {
   return movingAverage(dailyCases,7,true);
 }
+
+
+
+function replaceMinus(dataSet) {
+
+  var tmpResult=[];
+  for (var i = 0; i < dataSet.length; i++){
+   if (dataSet[i]<0) {
+	    tmpResult[i]=0;
+   }else {
+   	  tmpResult[i]=dataSet[i];
+   } 	   
+	}
+   return tmpResult;
+}
+
 
 
 
@@ -370,8 +440,10 @@ function findBestStart(realDataSet,startPoint)
      backdays=42-j;
     
    
-   //     for (var i = 2; i < 16-j; i++){
-          for (var i = 3; i < 14; i++){   
+//     for (var i = 2; i < 16-j; i++){
+          for (var i = 3; i < 14; i++){
+	     
+      
       currForDataSet = buildHWSDataSet(realDataSet,forvardForecast+i-j,startPoint-i, backdays);     
 
       currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
@@ -386,36 +458,7 @@ function findBestStart(realDataSet,startPoint)
   return  minStartPoint;
 }
 
-function findBestStartOld(realDataSet,startPoint)
-{
-     
-  //  up 14 days before start 
-  //  21 days forecast 
-  //  14+ 21= 35 
-
-  if (startPoint<16) {
-    return startPoint;
-  } 
-  var minRMSE=100000;
-  var minStartPoint=startPoint; 
-  var currStartPoint=startPoint; 
-  
-  for (var i = 2; i < 16; i++){
-    currForDataSet = buildHWSDataSet(realDataSet,21+i,startPoint-i, parseInt(document.getElementById('calcRange').value));     
-
-    currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
-    if (minRMSE > currRMSE) {
-      minRMSE = currRMSE;
-      minStartPoint = startPoint-i;
-    }
-  }
-  return  minStartPoint;
-}
-
-
-
-
-function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
+function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holidaysDS) {
 
   var tempStr="";
   var tableStr="";
@@ -425,7 +468,15 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
 
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
-      tempStr=tempStr+'<td>'+dateDataSet[i]+'</td>';
+      outStr=dateDataSet[i];
+      addStyle='';
+      if (i==forecastDay) { 
+        outStr='<u>'+outStr+'</u>';
+        } 
+      if (holidaysDS[i]==true) {
+          addStyle=' style="background-color:#FF0000"; title="extra/long holidays" ';  
+      }
+      tempStr=tempStr+'<td '+addStyle+'>'+outStr+'</td>';
     } 
   }
   
@@ -433,7 +484,11 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
   tempStr="";
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
-      tempStr=tempStr+'<td>'+forecastDataSet[i]+'</td>';
+      currForec=forecastDataSet[i];   
+	    if (currForec==0) {
+	       currForec='n/a';
+	    }	
+      tempStr=tempStr+'<td>'+currForec+'</td>';
       forTmp.push(forecastDataSet[i]);
     } 
   }
@@ -481,12 +536,20 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet) {
 }
 
 
+
 var dstime=[];
 
-var dailyCases =  [null,0,0,0,0,0,20,0,0,18,4,3,0,3,5,7,25,24,34,63,98,116,106,163,290,307,952,627,674,927,1175,2038,3276,4915,6124,5256,9745,10985,11840,13867,18196,19342,19620,20443,23951,26078,27735,30963,33426,34939,26512,32499,35224,33052,34470,34629,30327,26442,27749,29458,32057,30632,33913,29107,25777,29805,27347,32440,31851,36122,34981,26404,23899,26711,29636,31643,36181,29191,26896,25263,26066,25802,29339,29222,25809,20372,19286,24226,22968,27971,27948,23809,19636,23578,21724,22773,28846,25215,21852,19144,19529,19962,20778,24013,25536,24106,20674,19191,22581,20875,22942,25767,23227,19612,19003,19647,21387,23998,27718,26517,20850,21024,26530,26909,29070,34004,34362,26934,31968,37274,39554,41435,48384,44860,41525,45773,48284,53826,59750,61226,51185,47580,52429,57798,64010,64097,74104,64439,59990,66406,68905,74168,75544,76179,65586,66388,63359,70096,73009,71923,79004,70425,57081,61570,67025,65857,70337,73251,60865,51097,48772,56092,56102,60877,64237,59235,49457,48895,56434,56204,55082,61145,54642,38999,39879,45716,46125,46582,51125,45770,35217,39846,42068,45208,46692,49109,45956,35671,36727,44078,41453,46158,53101,44103,32430,25053,28471,37593,40950,47457,40579,33416,37189,38256,41181,47237,51431,45052,34499,35396,37595,41788,46866,54093,44534,34068,36780,45304,43599,47536,52750,49101,34967,41310,45463,50108,58838,60711,55265,43907,45971,56292,59159,67528,70537,60040,51136,56970,65711,67242,76515,84315,79959,64279,69019,80081,82065,94704,101156,91419,79418,88672,101984,109873,126261,135670,134024,110896,122984,153732,146469,168734,185310,163003,149897,156354,168557,174606,197320,201964,179853,153341,170360,184578,180547,163372,162226,150327,147700,165694,190332,207180,224750,235698,215155,184388,198337,215205,225717,229175,243896,227566,195777,198561,207073,251172,240231,253713,202007,192058,199605,203322,230751,213252,156596,167476,149040,185320,204446,232840,244438,225401,237831,206188,197982,239092,263639,282466,303924,260954,222352,216385,232462,237147,236477,247356,207798,179809,148955,177005,189790,195957,193944,176175,143449,150860,154212,160066,166003,170704,147742,114774,126877,117889,113938,127524,132491,110012,93078,93707,100489,98486,109653,103658,88505,67995,56676,66020,73245,72037,83625,72395,59493,58507,73814,75529,78103,80793,65978,54421,54437,58516,67023,68458,69379,59851,45684,44911,56359,60680,62728,68258,52947,43382,46005,53677,63155,63107,66250,59201,47083,46181,60361,67039,66820,76801,68143,52267,60162,63498,70296,77151,73520,70669,47808,56651,62599,75370,80282,85540,72599,57371,56998,78105,78925,74250,81623,71512,51732,51925,60966,65379,66937,66999,58311,42257,47748,52226,56733,59428,59998,49781,36913,40402]            ;
+var dailyCases =     [null,0,0,0,0,0,20,0,0,18,4,3,0,3,5,7,25,24,34,63,98,116,106,163,290,307,952,627,674,927,1175,2038,3276,4915,6124,5256,9745,10985,11840,13867,18196,19342,19620,20443,23951,26078,27735,30963,33426,34939,26512,32499,35224,33052,34470,34629,30327,26442,27749,29458,32057,30632,33913,29107,25777,29805,27347,32440,31851,36122,34981,26404,23899,26711,29636,31643,36181,29191,26896,25263,26066,25802,29339,29222,25809,20372,19286,24226,22968,27971,27948,23809,19636,23578,21724,22773,28846,25215,21852,19144,19529,19962,20778,24013,25536,24106,20674,19191,22581,20875,22942,25767,23227,19612,19003,19647,21387,23998,27718,26517,20850,21024,26530,26909,29070,34004,34362,26934,31968,37274,39554,41435,48384,44860,41525,45773,48284,53826,59750,61226,51185,47580,52429,57798,64010,64097,74104,64439,59990,66406,68905,74168,75544,76179,65586,66388,63359,70096,73009,71923,79004,70425,57081,61570,67025,65857,70337,73251,60865,51097,48772,56092,56102,60877,64237,59235,49457,48895,56434,56204,55082,61145,54642,38999,39879,45716,46125,46582,51125,45770,35217,39846,42068,45208,46692,49109,45956,35671,36727,44078,41453,46158,53101,44103,32430,25053,28471,37593,40950,47457,40579,33416,37189,38256,41181,47237,51431,45052,34499,35396,37595,41788,46866,54093,44534,34068,36780,45304,43599,47536,52750,49101,34967,41310,45463,50108,58838,60711,55265,43907,45971,56292,59159,67528,70537,60040,51136,56970,65711,67242,76515,84315,79959,64279,69019,80081,82065,94704,101156,91419,79418,88672,101984,109873,126261,135670,134024,110896,122984,153732,146469,168734,185310,163003,149897,156354,168557,174606,197320,201964,179853,153341,170360,184578,180547,163372,162226,150327,147700,165694,190332,207180,224750,235698,215155,184388,198337,215205,225717,229175,243896,227566,195777,198561,207073,251172,240231,253713,202007,192058,199605,203322,230751,213252,156596,167476,149040,185320,204446,232840,244438,225401,237831,206188,197982,239092,263639,282466,303924,260954,222352,216385,232462,237147,236477,247356,207798,179809,148955,177005,189790,195957,193944,176175,143449,150860,154212,160066,166003,170704,147742,114774,126877,117889,113938,127524,132491,110012,93078,93707,100489,98486,109653,103658,88505,67995,56676,66020,73245,72037,83625,72395,59493,58507,73814,75529,78103,80793,65978,54421,54437,58516,67023,68458,69379,59851,45684,44911,56359,60680,62728,68258,52947,43382,46005,53677,63155,63107,66250,59201,47083,46181,60361,67039,66820,76801,68143,52267,60162,63498,70296,77151,73520,70669,47808,56651,62599,75370,80282,85540,72599,57371,56998,78105,78925,74250,81623,71512,51732,51925,60966,65379,66937,66999,58311,42257,47748,52226,56733,59428,59998,
+49781,36913,40402]    ;
+
+var holidaysList=['2020-05-23','2020-05-24','2020-05-25','2020-07-03','2020-07-04','2020-07-05', '2020-09-05','2020-09-06','2020-10-10','2020-10-11','2020-10-12', '2020-11-11', '2020-12-25','2020-12-26','2020-12-27', 
+                  '2021-01-01','2021-01-02','2021-01-03','2021-01-16','2021-01-17','2021-01-18','2021-02-13','2021-02-14','2021-02-15','2021-05-29','2021-05-30','2021-05-31'];
 
 
 var dvHWS=[];
+var dsHolidays=[];
+var dsHolidaysWeeks=[];
+
 
 function buildChart2(range,forecast) {
    
@@ -504,8 +567,11 @@ function buildChart2(range,forecast) {
   onDay=dailyCases.length;
   
   dstime=   buildTimeDataSet(dailyCases,startDate,predictDays);
-  
+  dsHolidays  = buildHolidaysDataSet(startDate,dstime,holidaysList);
+  dsHolidaysWeeks= buildHolidaysWeeks(startDate,dsHolidays);
   dsmoving= movingAverage(dailyCases,calcRecur,true);
+
+//  dsmoving= movingAverage(dailyCases,14,true);
 
   
   forTrend= linearRegressionDataSet(dsmoving,calcRecur);
@@ -519,15 +585,14 @@ function buildChart2(range,forecast) {
   dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
 
   onDay=    findBestStart(dailyCases,onDay);
-predictDays=predictDays+dailyCases.length-onDay;
   dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
-
+  dvHWS =   replaceMinus(dvHWS);
 
 
   fc = Highcharts.chart('container', {
 
     title: {
-        text: 'Covid cases: daily and forecast'
+        text: 'Covid cases: daily and forecast in USA'
     },
     chart: {
         zoomType: 'x',
@@ -567,6 +632,10 @@ predictDays=predictDays+dailyCases.length-onDay;
         },
 
 
+    subtitle: {
+        text: 'Source: ours estimation '
+    },
+
     yAxis: {
         title: {
             text: 'Number of daily cases'
@@ -596,6 +665,7 @@ predictDays=predictDays+dailyCases.length-onDay;
             });
 
                 var currentX=this.x+1;
+                var clickX=  this.x+1;
                  
                 if  (document.getElementById('autoSet').checked==true) {
                     currentX=findBestStart(dailyCases,currentX);
@@ -606,11 +676,12 @@ predictDays=predictDays+dailyCases.length-onDay;
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
-                   
+                dvHWS = replaceMinus(dvHWS);
+   
                 fc.series[2].setData(dvHWS);                        
 
                 document.getElementById('rmse').value=RMSE_NORM(dailyCases.slice(currentX,currentX+numPred),dvHWS.slice(currentX,currentX+ numPred));
-                showDataTable(buildTimeDataSet(dailyCases,startDate,numPred),dailyCases,dvHWS);
+                showDataTable(buildTimeDataSet(dailyCases,startDate,numPred),dailyCases,dvHWS,clickX,dsHolidays);
 
                     }
                 }
@@ -631,6 +702,13 @@ predictDays=predictDays+dailyCases.length-onDay;
         enabled: false
     }, 
        data: dvHWS
+    },
+    {
+        name: 'extra holidays',
+       color: 'red', 
+       visible: false, 
+       data: dsHolidaysWeeks
+       
     }
 
 ],
@@ -681,14 +759,15 @@ RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >
 	<h3> Updated version of the project description with fixed technical issues 
 
 	<a href="Project Desription by J.Stepanenko.pdf" target="_blank">here</a> </h3>
+
 </div>
 
 <div>
   <script>
     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
-    showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS);
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
   </script>
 <div>
-
-	</body>
+	
+		</body>
 </html>

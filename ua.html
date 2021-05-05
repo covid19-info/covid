@@ -473,10 +473,11 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
       if (i==forecastDay) { 
         outStr='<u>'+outStr+'</u>';
         } 
-      if (holidaysDS[i]==true) {
-          addStyle=' style="background-color:#FF0000"; title="extra/long holidays" ';  
+ if (holidaysDS[i]==true) {
+          addStyle=' style="color:#FF0000"; title="extra/long holidays" ';  
       }
-      tempStr=tempStr+'<td '+addStyle+'>'+outStr+'</td>';
+      tempStr=tempStr+'<td><div '+addStyle+'>'+outStr+'</div></td>';
+ 
     } 
   }
   

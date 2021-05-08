@@ -754,6 +754,7 @@ Back days (data use)  <input id="calcRange" name="calcRange"  type="number" size
 <input type="button" id="rebuild" value="Reset" 
 onclick="
     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+	 showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
   " >
 
 RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >

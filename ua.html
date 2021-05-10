@@ -511,18 +511,25 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   }
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  
   
+	var minus=false;
   for (var i = 0; i < forTmp.length; i++){
     if (forTmp[i]>realTmp[i]) {
       currPercent= realTmp[i]/forTmp[i];
+	 minus=false;    
     } else {
       currPercent= forTmp[i]/realTmp[i];
+	   minus=true;
     }
         
     if (realTmp[i]=='') {
       currPercent='';
     } else {
       currPercent =Math.round((1-currPercent)*10000)/100;
+      if (minus) {
+      currPercent=0-currPercent;
+      }	
     }
+	  
     percentInfo.push(currPercent);
   }
 

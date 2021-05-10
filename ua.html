@@ -515,10 +515,10 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   for (var i = 0; i < forTmp.length; i++){
     if (forTmp[i]>realTmp[i]) {
       currPercent= realTmp[i]/forTmp[i];
-	 minus=false;    
+	 minus=true;    
     } else {
       currPercent= forTmp[i]/realTmp[i];
-	   minus=true;
+	   minus=false;
     }
         
     if (realTmp[i]=='') {

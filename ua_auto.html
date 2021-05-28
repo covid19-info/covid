@@ -473,6 +473,7 @@ function total_to_daily(dataSet) {
 }
 
 
+
 function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holidaysDS) {
 
   var tempStr="";
@@ -538,7 +539,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   }
 
   if (nullCount>3) {
-      mistakeMessage=" Not outbrake/epidemic. Endemic status. ";
+      mistakeMessage=mistakeMessage +" Not outbrake/epidemic. Endemic status. ";
   }
 
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  

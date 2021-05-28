@@ -465,7 +465,9 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   var forTmp=[];
   var realTmp=[];
   var percentInfo=[];
-
+  var mistakeMessage='';
+  var nullCount=0;
+  
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
       outStr=dateDataSet[i];
@@ -473,8 +475,9 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
       if (i==forecastDay) { 
         outStr='<u>'+outStr+'</u>';
         } 
-if (holidaysDS[i]==true) {
+ if (holidaysDS[i]==true) {
           addStyle=' style="color:#FF0000"; title="extra/long holidays" ';  
+          mistakeMessage=" Extra/long holidays. ";
       }
       tempStr=tempStr+'<td><div '+addStyle+'>'+outStr+'</div></td>';
  
@@ -496,6 +499,7 @@ if (holidaysDS[i]==true) {
 
   tableStr=tableStr+'<tr><td>Forecast</td>'+tempStr+'</tr>';
   tempStr="";
+     
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
         
@@ -505,24 +509,46 @@ if (holidaysDS[i]==true) {
       }  else {
         currReal=realDataSet[i];
       }
+      if (i<realDataSet.length)
+      {
+          if ((realDataSet[i]==null) || (realDataSet[i]<1000)) {
+              nullCount=nullCount+1;
+        
+          } 
+     }
+
       tempStr=tempStr+'<td>'+currReal+'</td>';
       realTmp.push(currReal); 
     }
   }
+
+  if (nullCount>1) {
+      mistakeMessage=" Not outbrake/epidemic. Endemic status. ";
+  }
+
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  
   
+	var minus=false;
   for (var i = 0; i < forTmp.length; i++){
     if (forTmp[i]>realTmp[i]) {
       currPercent= realTmp[i]/forTmp[i];
+	 minus=false;    
     } else {
       currPercent= forTmp[i]/realTmp[i];
+	   minus=true;
     }
         
     if (realTmp[i]=='') {
       currPercent='';
     } else {
       currPercent =Math.round((1-currPercent)*10000)/100;
+      if (minus) {
+      currPercent=0-currPercent;
+      }	
     }
+	  if (forTmp[i]==0) {
+      currPercent='n/a';
+    }  
     percentInfo.push(currPercent);
   }
 
@@ -532,7 +558,11 @@ if (holidaysDS[i]==true) {
   }
 
   tableStr=tableStr+'<tr><td>Error (%) </td>'+tempStr+'</tr>';
-  document.getElementById("tableForecast").innerHTML = "<table style='font-size: 12px; border: 1px solid black;'> <tr>"+tableStr+ "</tr></table>"; 
+
+  if (mistakeMessage!='') {
+    mistakeMessage=mistakeMessage+' Forecast may be wrong.<br>';
+  }
+  document.getElementById("tableForecast").innerHTML = mistakeMessage+ "<table style='font-size: 12px; border: 1px solid black;'> <tr>"+tableStr+ "</tr></table>"; 
     
 }
 

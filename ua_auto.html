@@ -613,6 +613,9 @@ xmlhttp.onreadystatechange = function() {
     var myArr = JSON.parse(this.responseText);
     dailyCases = total_to_daily(myArr.confirmed);
     startDate=myArr.dates[0];
+    if (dailyCases[dailyCases.length-1]==0) {
+      dailyCases.splice(dailyCases.length-1,1);
+    }	  
     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
       showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
 

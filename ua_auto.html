@@ -660,6 +660,11 @@ function buildChart2(range,forecast) {
   dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
 
   onDay=    findBestStart(dailyCases,onDay);
+  
+  predictDays=predictDays+dailyCases.length-onDay;
+//NEW 22/12/2020
+  predictDays=Math.round(parseInt(document.getElementById('calcRange').value)/2-1) ;
+ 
   dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
   dvHWS =   replaceMinus(dvHWS);
 

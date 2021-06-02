@@ -663,9 +663,9 @@ function buildChart2(range,forecast) {
 
   onDay=    findBestStart(dailyCases,onDay);
   
-  predictDays=predictDays+dailyCases.length-onDay;
+  predictDays=predictDays+(dailyCases.length-onDay);
 //NEW 22/12/2020
-  predictDays=Math.round(parseInt(document.getElementById('calcRange').value)/2-1) ;
+//  predictDays=Math.round(parseInt(document.getElementById('calcRange').value)/2-1) ;
  
   dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
   dvHWS =   replaceMinus(dvHWS);
@@ -751,10 +751,10 @@ function buildChart2(range,forecast) {
                  
                 if  (document.getElementById('autoSet').checked==true) {
                     currentX=findBestStart(dailyCases,currentX);
-                    numPred=numPred+this.x+1-currentX;
-                    if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
-                        numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
-                    }
+                    numPred=numPred+(this.x+1-currentX);
+              //      if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
+              //          numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
+              //      }
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        

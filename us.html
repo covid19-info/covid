@@ -585,6 +585,7 @@ function buildChart2(range,forecast) {
   dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
 
   onDay=    findBestStart(dailyCases,onDay);
+  predictDays=predictDays+(dailyCases.length-onDay);
   dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
   dvHWS =   replaceMinus(dvHWS);
 
@@ -669,7 +670,8 @@ function buildChart2(range,forecast) {
                  
                 if  (document.getElementById('autoSet').checked==true) {
                     currentX=findBestStart(dailyCases,currentX);
-                    numPred=numPred+this.x+1-currentX;
+
+			numPred=numPred+(this.x+1-currentX);
                     if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
                         numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
                     }

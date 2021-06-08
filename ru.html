@@ -676,9 +676,9 @@ function buildChart2(range,forecast) {
                     currentX=findBestStart(dailyCases,currentX);
                     numPred=numPred+(this.x+1-currentX);
 		    
-                    if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
-                        numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
-                    }
+  //                  if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
+   //                     numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
+    //                }
                 } 
                 
                 dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        

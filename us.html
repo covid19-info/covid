@@ -466,6 +466,8 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   var forTmp=[];
   var realTmp=[];
   var percentInfo=[];
+  var mistakeMessage='';
+  var nullCount=0;
 
   for (var i = 0; i < forecastDataSet.length; i++){
    if (forecastDataSet[i]!=null) {
@@ -476,6 +478,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
         } 
       if (holidaysDS[i]==true) {
           addStyle=' style="color:#FF0000"; title="extra/long holidays" ';  
+	   mistakeMessage=" Extra/long holidays. ";
       }
       tempStr=tempStr+'<td><div '+addStyle+'>'+outStr+'</div></td>';
  
@@ -510,6 +513,10 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
       realTmp.push(currReal); 
     }
   }
+	
+   if (nullCount>2) {
+      mistakeMessage=mistakeMessage+ " Not outbrake/epidemic. Endemic status. ";
+  }
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  
   
   for (var i = 0; i < forTmp.length; i++){
@@ -531,9 +538,15 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
   for (var i = 0; i < percentInfo.length; i++){
     tempStr=tempStr+'<td>'+percentInfo[i]+'</td>';
   }
-
+	
+  
   tableStr=tableStr+'<tr><td>Error (%) </td>'+tempStr+'</tr>';
-  document.getElementById("tableForecast").innerHTML = "<table style='font-size: 12px; border: 1px solid black;'> <tr>"+tableStr+ "</tr></table>"; 
+	
+	
+ if (mistakeMessage!='') {
+    mistakeMessage=mistakeMessage+' Forecast may be wrong.<br>';
+  }
+  document.getElementById("tableForecast").innerHTML = mistakeMessage+ "<table style='font-size: 12px; border: 1px solid black;'> <tr>"+tableStr+ "</tr></table>"; 
     
 }
 

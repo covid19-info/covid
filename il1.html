@@ -1,0 +1,801 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cases in Poland</title>
+
+		<style type="text/css">
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 360px; 
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+	font-family: Verdana, sans-serif;
+	border-collapse: collapse;
+	border: 1px solid #EBEBEB;
+	margin: 10px auto;
+	text-align: center;
+	width: 100%;
+	max-width: 500px;
+}
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+.highcharts-data-table th {
+	font-weight: 600;
+    padding: 0.5em;
+}
+.highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+    padding: 0.5em;
+}
+.highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+
+		</style>
+	</head>
+	<body>
+<script src="highcharts.js"></script>
+
+<script  src="./PolynomialRegression.js"></script>
+
+
+<script src="big.js"></script>
+<script src="ssci.js"></script>
+
+
+<script src="customEvents.js"></script>
+
+<figure class="highcharts-figure">
+
+<button> <a href="index.html">HOME</a> </button>
+
+    <div id="container"></div>
+    <p class="highcharts-description">
+        
+    </p>
+</figure>
+
+	
+		<script type="text/javascript">
+
+function linearRegression(data) {
+  var sum_x = 0, sum_y = 0
+    , sum_xy = 0, sum_xx = 0
+    , count = 0
+    , m, b;
+
+  if (data.length === 0) {
+    throw new Error('Empty data');
+  }
+
+  // calculate sums
+  for (var i = 0, len = data.length; i < len; i++) {
+    var point = data[i];
+    sum_x += point[0];
+    sum_y += point[1];
+    sum_xx += point[0] * point[0];
+    sum_xy += point[0] * point[1];
+    count++;
+  }
+
+  // calculate slope (m) and y-intercept (b) for f(x) = m * x + b
+  m = (count * sum_xy - sum_x * sum_y) / (count * sum_xx - sum_x * sum_x);
+  b = (sum_y / count) - (m * sum_x) / count;
+
+//  return function(m, b, x) {
+//    return m * x + b;
+//  }.bind(null, m, b);
+  
+   return m;
+}
+
+
+function movingAverage(values, N,roundRes) {
+  var i = 0;
+  var sum = 0;
+  var means = [];
+  for ( i = 0; i < values.length; i++) {
+      means[i] = null;
+  }
+  i=0;
+  for ( n = Math.min(N - 1, values.length); i < n; i++) {
+    sum += values[i];
+  }
+  for (let n = values.length; i < n; i++) {
+    sum += values[i];
+    if (roundRes) { 
+        means[i] = Math.round(sum / N);
+    } else {  
+        means[i] = sum / N;
+    }
+    sum -= values[i - N + 1];
+  }
+  return means;
+}
+
+
+function linearRegressionDataSet(values, N) {
+
+  means=[];
+  for ( i = 0; i < values.length; i++) {
+      means[i] = 0;
+  }
+// make dataset for linearRegression
+  
+  for ( i = 0; i < values.length; i++) {
+      ds =[];
+      for ( j = 0; j<N; j++){
+        k=i-N+j;
+        if (k<0) {
+          num = 0;
+        }  else {
+          num = values[k] ;
+        }
+
+       ds[j]=[j,num];
+    }
+     
+    means[i]=linearRegression(ds);
+  }
+   return means; 
+
+}
+
+function RMSE(realData,forecastData) {
+  if (realData.length<forecastData.length) {
+    lengthData = realData.length;
+  } else {
+    lengthData = forecastData.length;
+ 
+  }
+  var sum =0;
+  for ( i = 0; i < lengthData; i++) {
+      sum = sum+ Math.pow(forecastData[i]-realData[i],2);
+  }
+  return Math.sqrt((sum/lengthData));
+}
+
+
+  
+function RMSE_NORM(realData,forecastData) {
+ if (realData.length==0) {
+  return 'N/A';
+
+}
+
+ if (forecastData.length==0) {
+  return 'N/A';
+}
+ 
+var diff = Math.max.apply(Math, realData)-Math.min.apply(Math, realData);
+  if (diff==0) {return 0;}  
+  return RMSE(realData,forecastData)/diff;
+}
+
+
+
+
+
+
+//  if ((means[i] == Number.POSITIVE_INFINITY) || (means[i] == Number.NEGATIVE_INFINITY))
+//        {
+//            means[i]=0;
+//        }
+      
+
+function percentDataSet(values) {
+
+  means=[];
+  means[0] = 0;
+  for ( i = 1; i < values.length; i++) {
+      
+      if ((values[i]==null) || (values[i]==0)  ||  (values[i-1]==null) || (values[i-1]==0))  {
+            means[i]=0;
+            continue;
+      }    
+//      if (values[i]>values[i-1]) {
+          means[i]=Math.round(((values[i]-values[i-1])/((values[i]+values[i-1])/2))*1000)/10; 
+//      }
+//      if (values[i]<values[i-1]) {
+//          means[i]= Math.round(((1-(values[i-1]/values[i]))*100)); 
+//        }
+      if (values[i]==values[i-1]) {
+        means[i]= 0; 
+      }
+//       console.log(values[i],values[i-1],means[i]);
+    }
+ return means;
+}
+
+function buildTimeDataSet(dailyCases,startDate,predictDays) {
+
+var dateList=[];
+var countDate=dailyCases.length;
+
+countDate=dailyCases.length+predictDays;
+
+ var dt = new Date(startDate);
+ var tm= dt.getTime();
+ var msInDay = 1000 * 60 * 60 * 24;
+ for (var i = 0; i < countDate; i++){
+   dt = new Date(tm); 
+   dateList[i]=(dt.getMonth()+1) +'/'+dt.getDate();
+   tm=tm+msInDay;  
+ } 
+
+return dateList;
+}
+
+
+function buildHolidaysDataSet(startDate,timeDataSet,holidaysList) {
+  
+  var found=false;
+  var dateList=[];
+  var dt = new Date(startDate);
+  var tm= dt.getTime();
+  var msInDay = 1000 * 60 * 60 * 24;
+  for (var i = 0; i < timeDataSet.length; i++){
+    dt = new Date(tm);
+    found=false;
+    for (var j = 0; j < holidaysList.length; j++){
+      dtHL = new Date(holidaysList[j]);
+      
+      if ((dtHL.getMonth() == dt.getMonth()) && (dtHL.getDate() == dt.getDate()) && (dtHL.getFullYear() == dt.getFullYear()) ) {
+        found=true;
+      }
+    }
+ 
+    dateList[i]=found;
+    tm=tm+msInDay;  
+  } 
+return dateList;
+}
+
+
+
+function buildHolidaysWeeks(startDate,timeDataSet) {
+  
+  var fillWeek=0;
+  var found=false;
+  var dateList=[];
+  var dt = new Date(startDate);
+  var tm= dt.getTime();
+  var msInDay = 1000 * 60 * 60 * 24;
+  for (var i = 0; i < timeDataSet.length; i++){
+    dateList[i]=null;
+  }
+  for (var i = 0; i < timeDataSet.length; i++){
+    dt = new Date(tm);
+    
+    fillWeek=0;
+    if (timeDataSet[i]==true) {
+        if (dt.getDay()==6) {
+            fillWeek=i+1;
+        } else {
+            fillWeek=i-dt.getDay();  
+        } 
+        for (var j = 0; j < 7; j++){
+          dateList[i+j]=1;
+        }          
+    }
+
+    tm=tm+msInDay;  
+  } 
+return dateList;
+}
+
+
+function buildMovingDataSet(dailyCases) {
+  return movingAverage(dailyCases,7,true);
+}
+
+
+
+function replaceMinus(dataSet) {
+
+  var tmpResult=[];
+  for (var i = 0; i < dataSet.length; i++){
+   if (dataSet[i]<0) {
+	    tmpResult[i]=0;
+   }else {
+   	  tmpResult[i]=dataSet[i];
+   } 	   
+	}
+   return tmpResult;
+}
+
+
+
+
+
+function buildHWSDataSet(dailyCases,predictDays,onDay,calcRange) {
+
+var startPoint=onDay-calcRange;
+    if (startPoint<=0) {startPoint=0;}
+var endPoint=onDay;
+
+
+
+smarr=[];
+for (var i = 0; i < endPoint; i++){
+
+  var  dd=dailyCases[i];
+   if ((dd==null) || (dd==0)) {
+      dd = 0.01;     
+   }
+  if ((i>=startPoint) && (i<endPoint)) {
+      smarr.push([i,dd]);
+  }
+}
+
+
+var fhw = ssci.fore.holtWinter()
+                .period(7)
+                .data(smarr)
+                .x(function(d){ return d[0]; })
+                .y(function(d){ return d[1]; })
+                .level(0.66)
+//                .trend(0.0)
+                .season(1.0);
+               
+fhw();
+
+var calcArr = fhw.outputY();
+
+var forecastHWS = fhw.forecast(predictDays);
+
+for (var i = 0; i < forecastHWS.length; i++){
+   console.log(forecastHWS[i]);
+}
+ 
+predictArrayHWS=[];
+
+for (var i = 0; i < dailyCases.length+predictDays; i++){
+   if (i<endPoint) {
+          predictArrayHWS.push(null);  
+       //   predictArrayHWS.push(Math.round(calcArr[i-7]));
+   } 
+   if ((i>=endPoint) &&  (i<endPoint+predictDays)) {
+      
+      predictArrayHWS.push(Math.round(forecastHWS[i-endPoint][1]));
+   }
+   if (i>=endPoint+predictDays) {
+      predictArrayHWS.push(null);
+   }  
+ }
+
+  return predictArrayHWS;
+}
+
+
+
+
+function builPRDataSet(dailyCases,predictDays,onDay,calcRange) {
+
+var startPoint=onDay-calcRange;
+    if (startPoint<=0) {startPoint=0;}
+var endPoint=onDay;
+
+
+  var someDataA = [];
+ 
+
+  for (var i = 0; i < dailyCases.length; i++){
+   if ((i>=startPoint) && (i<endPoint)) {
+      someDataA.push(new DataPoint(i-startPoint, dailyCases[i]));
+   }
+  } 
+ 
+  var polyA = new PolynomialRegression(someDataA, 4);
+  var termsA = polyA.getTerms();
+  var predictArrayA =[];
+
+  for (var i = 0; i < dailyCases.length+predictDays; i++){
+   if (i<endPoint) {
+       if (i>startPoint) { 
+          predictArrayA.push(null);  
+ //           predictArrayA.push(Math.round(polyA.predictY(termsA,i-startPoint)));
+       }
+       else {        
+          predictArrayA.push(null);
+       }   
+    } 
+    if ((i>=endPoint) &&  (i<endPoint+predictDays)) {
+      predictArrayA.push(Math.round(polyA.predictY(termsA,i-startPoint)));
+    }
+    if (i>=endPoint+predictDays) {
+      predictArrayA.push(null);
+    }  
+  } 
+  return predictArrayA;
+}
+
+function findBestStart(realDataSet,startPoint)
+{
+     
+  //  up 14 days before start 
+  //  21 days forecast 
+  //  14+ 21= 35 
+
+  if (startPoint<16) {
+    return startPoint;
+  } 
+  var minRMSE=100000;
+  var minStartPoint=startPoint; 
+  var currStartPoint=startPoint; 
+//  var backdays=parseInt(document.getElementById('calcRange').value);
+  var forvardForecast=21;
+
+//  for (var j = 0; j<14; j++) {
+	  for (var j = 0; j<25; j++) {
+//     backdays=parseInt(document.getElementById('calcRange').value)-j;
+     backdays=42-j;
+    
+   
+//     for (var i = 2; i < 16-j; i++){
+        for (var i = 3; i < 14; i++){
+//	  for (var i = 3; i < 25; i++){   
+      
+      currForDataSet = buildHWSDataSet(realDataSet,forvardForecast+i-j,startPoint-i, backdays);     
+
+      currRMSE = RMSE_NORM(realDataSet.slice(startPoint-i,startPoint),currForDataSet.slice(startPoint-i,startPoint)); 
+      if (minRMSE > currRMSE) {
+        minRMSE = currRMSE;
+        minStartPoint = startPoint-i;
+        minBackdays=backdays;
+      }
+    }
+  }
+  document.getElementById('calcRange').value=minBackdays;
+  return  minStartPoint;
+}
+
+function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holidaysDS) {
+
+  var tempStr="";
+  var tableStr="";
+  var forTmp=[];
+  var realTmp=[];
+  var percentInfo=[];
+  var mistakeMessage='';
+  var nullCount=0;
+  
+  for (var i = 0; i < forecastDataSet.length; i++){
+   if (forecastDataSet[i]!=null) {
+      outStr=dateDataSet[i];
+      addStyle='';
+      if (i==forecastDay) { 
+        outStr='<u>'+outStr+'</u>';
+        } 
+ if (holidaysDS[i]==true) {
+          addStyle=' style="color:#FF0000"; title="extra/long holidays" ';  
+          mistakeMessage=" Extra/long holidays. ";
+      }
+      tempStr=tempStr+'<td><div '+addStyle+'>'+outStr+'</div></td>';
+ 
+    } 
+  }
+  
+  tableStr='<tr><td>Date</td>'+tempStr+'</tr>';
+  tempStr="";
+  for (var i = 0; i < forecastDataSet.length; i++){
+   if (forecastDataSet[i]!=null) {
+      currForec=forecastDataSet[i];   
+	    if (currForec==0) {
+	       currForec='n/a';
+	    }	
+      tempStr=tempStr+'<td>'+currForec+'</td>';
+      forTmp.push(forecastDataSet[i]);
+    } 
+  }
+
+  tableStr=tableStr+'<tr><td>Forecast</td>'+tempStr+'</tr>';
+  tempStr="";
+     
+  for (var i = 0; i < forecastDataSet.length; i++){
+   if (forecastDataSet[i]!=null) {
+        
+      if ((realDataSet[i]==null) || (i>=realDataSet.length))
+      {
+        currReal='';
+      }  else {
+        currReal=realDataSet[i];
+      }
+      if (i<realDataSet.length)
+      {
+          if ((realDataSet[i]==null) || (realDataSet[i]<1000)) {
+              nullCount=nullCount+1;
+        
+          } 
+     }
+
+      tempStr=tempStr+'<td>'+currReal+'</td>';
+      realTmp.push(currReal); 
+    }
+  }
+
+  if (nullCount>2) {
+      mistakeMessage=" Not outbrake/epidemic. Endemic status. ";
+  }
+
+  tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  
+  
+	var minus=false;
+  for (var i = 0; i < forTmp.length; i++){
+    if (forTmp[i]>realTmp[i]) {
+      currPercent= realTmp[i]/forTmp[i];
+	 minus=false;    
+    } else {
+      currPercent= forTmp[i]/realTmp[i];
+	   minus=true;
+    }
+        
+    if (realTmp[i]=='') {
+      currPercent='';
+    } else {
+      currPercent =Math.round((1-currPercent)*10000)/100;
+      if (minus) {
+      currPercent=0-currPercent;
+      }	
+    }
+	  if (forTmp[i]==0) {
+      currPercent='';
+    }  
+    percentInfo.push(currPercent);
+  }
+
+  tempStr='';
+  for (var i = 0; i < percentInfo.length; i++){
+    tempStr=tempStr+'<td>'+percentInfo[i]+'</td>';
+  }
+
+  tableStr=tableStr+'<tr><td>Error (%) </td>'+tempStr+'</tr>';
+
+  if (mistakeMessage!='') {
+    mistakeMessage=mistakeMessage+' Forecast may be wrong.<br>';
+  }
+  document.getElementById("tableForecast").innerHTML = mistakeMessage+ "<table style='font-size: 12px; border: 1px solid black;'> <tr>"+tableStr+ "</tr></table>"; 
+    
+}
+
+
+
+var dstime=[];
+var dailyCases =         [null,null,null,null,null,null,null,0,1,0,0,0,1,4,0,3,2,0,3,2,4,4,14,11,25,22,12,34,50,20,85,39,96,244,28,178,188,371,488,439,324,342,584,628,448,663,734,765,571,423,579,474,344,156,564,440,335,402,441,460,455,257,224,283,226,222,229,556,305,255,240,145,112,173,106,112,155,84,23,38,43,21,71,55,18,23,29,23,19,31,10,18,10,26,16,8,16,7,22,5,17,23,36,79,115,25,59,98,116,92,118,67,190,111,169,148,175,214,226,177,83,182,258,288,253,303,294,145,304,430,532,356,400,621,334,686,803,1013,790,1008,1115,788,791,1473,1335,1268,1441,1198,1206,1962,1728,1828,1871,1400,1906,924,1714,2039,2043,1897,1493,1203,1278,2029,2308,2006,1737,934,1248,597,1615,1768,1721,1640,1432,1333,678,1720,1871,1558,1671,1258,1153,447,2071,1658,1560,1630,1117,1217,730,1809,1988,1943,2000,1597,1465,555,2576,1942,2926,2991,1964,2517,1708,3331,3590,3532,4429,3038,4158,2882,4764,4034,6063,4791,3815,4531,4300,3027,2445,11316,7425,5784,9201,3926,2239,3661,8568,7996,5430,5523,2332,5534,4717,4455,3855,2522,2017,618,3538,2621,1848,1701,1695,874,339,1767,1286,1173,912,593,573,533,905,873,826,564,587,721,521,693,892,804,531,539,547,292,647,773,665,833,536,644,402,1014,782,794,718,699,649,521,1080,937,980,1169,718,987,809,1248,1281,1492,1423,1059,1725,1080,1891,1488,1986,2126,872,2517,1390,2330,1124,4412,2933,2177,2734,1874,3499,4228,2535,4656,4713,4273,2806,5815,5113,4186,6678,5248,6289,4070,9304,7966,7309,7600,6309,8077,5885,9754,8990,9997,9754,5235,8450,4833,9917,7380,10213,7027,6159,4933,3442,8962,7213,8012,7305,5096,4798,4646,8811,7732,8896,6744,5238,4727,3756,7189,7191,6010,5083,3934,3100,2534,5913,4282,4054,3305,2579,0,5530,4955,4574,4184,3970,3054,2555,2472,4151,5260,4267,3922,3058,3262,1848,3016,3671,3230,2758,1948,1601,749,2365,1790,1475,1384,1047,611,552,992,925,339,817,538,0,541,201,514,466,351,251,363,177,356,317,296,270,188,137,122,225,176,170,202,34,142,165,171,139,135,315,85,82,50,83,110,106,84,74,0,73,67,76,70,61,30,27,7,65,43,30,29,20,38,2,40,8,54,42,27,18,11,42,28,19,12,13,20,5,17,36,6,15,7,27,5,14,0,0,45,23,8,5,24,11,19,27,22,61,37,123,89,146,205,208,185,65,308,290,291,290,304,277,321,496,427]              ;
+
+var holidaysList=['2020-11-11', '2020-12-25','2020-12-26','2020-12-27',  '2021-01-01','2021-01-02','2021-01-03','2021-01-06','2021-04-03','2021-04-04','2021-04-05','2021-05-01','2021-05-02','2021-05-03','2021-06-03'];
+
+
+
+var dvHWS=[];
+var dsHolidays=[];
+var dsHolidaysWeeks=[];
+
+
+function buildChart2(range,forecast) {
+   
+
+
+  calcRecur=7;
+  predictDays  = calcRecur*2;
+  startDate= "2020-02-15";
+  calcRange=calcRecur*6;
+     
+  calcRange=range;
+  predictDays=forecast;
+  
+
+  onDay=dailyCases.length;
+  
+  dstime=   buildTimeDataSet(dailyCases,startDate,predictDays);
+  dsHolidays  = buildHolidaysDataSet(startDate,dstime,holidaysList);
+  dsHolidaysWeeks= buildHolidaysWeeks(startDate,dsHolidays);
+  dsmoving= movingAverage(dailyCases,calcRecur,true);
+
+//  dsmoving= movingAverage(dailyCases,14,true);
+
+  
+  forTrend= linearRegressionDataSet(dsmoving,calcRecur);
+  dspercent = movingAverage(percentDataSet(dsmoving),calcRecur,true);
+  dspercent = percentDataSet(dsmoving,calcRecur,true);
+
+// dspercent =  dsmoving;
+
+
+  dspr=     builPRDataSet(dailyCases,  predictDays,onDay,calcRange);
+  dsprmov=  builPRDataSet(dsmoving,    predictDays,onDay,calcRange);
+
+  onDay=    findBestStart(dailyCases,onDay);
+  predictDays=predictDays+(dailyCases.length-onDay);
+  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(document.getElementById('calcRange').value));
+  dvHWS =   replaceMinus(dvHWS);
+
+
+  fc = Highcharts.chart('container', {
+
+    title: {
+        text: 'Covid cases: daily and forecast in Poland'
+    },
+    chart: {
+        zoomType: 'x',
+        resetZoomButton: {
+            position: {
+                 align: 'left', 
+                // verticalAlign: 'top', // by default
+                x: 0,
+                y: -30
+            }
+        }
+    },
+
+
+    credits: {
+            enabled: false
+        },
+        plotOptions: {
+            series: {
+                showCheckbox: false,
+                selected: true,
+                marker: {
+                     enabled: false
+                }
+            },
+            spline: {
+
+                events: {
+                    legendItemClick: function(event) {
+
+                        this.checkbox.click();
+                        return false;
+                    }
+                },
+                showInLegend: true
+            }
+        },
+
+
+    subtitle: {
+        text: 'Source: ours estimation '
+    },
+
+    yAxis: {
+        title: {
+            text: 'Number of daily cases'
+        }
+    },
+
+    
+    xAxis: {
+    categories: dstime,
+    crosshair: {
+    	enabled: true,
+      width: 1, 
+    }
+  },
+
+    series: [{
+        name: 'Daily new cases',
+        data: dailyCases,
+        point: {
+                
+                events: {
+                    click: function () {
+                        var chart = this.series.chart;
+                        var numPred=parseInt(document.getElementById('pred').value);        
+                        fc.xAxis[0].update({
+                categories: buildTimeDataSet(dailyCases,startDate,numPred)
+            });
+
+                var currentX=this.x+1;
+                var clickX=  this.x+1;
+                 
+                if  (document.getElementById('autoSet').checked==true) {
+                    currentX=findBestStart(dailyCases,currentX);
+                    numPred=numPred+(this.x+1-currentX);
+	//            if (numPred>parseInt(document.getElementById('calcRange').value/2)) {
+        //                numPred= Math.round(parseInt(document.getElementById('calcRange').value)/2)-1;
+        //            }
+                } 
+                
+                dvHWS=buildHWSDataSet(dailyCases,numPred,currentX, parseInt(document.getElementById('calcRange').value));                        
+                dvHWS = replaceMinus(dvHWS);
+   
+                fc.series[2].setData(dvHWS);                        
+
+                document.getElementById('rmse').value=RMSE_NORM(dailyCases.slice(currentX,currentX+numPred),dvHWS.slice(currentX,currentX+ numPred));
+                showDataTable(buildTimeDataSet(dailyCases,startDate,numPred),dailyCases,dvHWS,clickX,dsHolidays);
+
+                    }
+                }
+            },
+            
+   
+    },{
+        name: '7 day moving average',
+       color: 'green', 
+       visible: false, 
+       data: dsmoving
+       
+    },{
+
+        name: 'hws',
+       color: 'brown',
+        label: {
+        enabled: false
+    }, 
+       data: dvHWS
+    },
+    {
+        name: 'extra holidays',
+       color: 'red', 
+       visible: false, 
+       data: dsHolidaysWeeks
+       
+    }
+
+],
+
+ 
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+});
+
+  return fc;
+
+}
+
+
+
+
+</script>
+
+
+<div align="center" id="tableForecast"></div>
+
+<div align="center">
+Forecast (days)       <input id="pred"      name="pred"       type="number" size="3" value="14" min="7"  max="42" step="7"  >
+Back days (data use)  <input id="calcRange" name="calcRange"  type="number" size="3" value="42" min="14" max="42" step="7"  >
+
+<label for="autoSet">Auto</label>
+<input id="autoSet" name="autoSet"  type="checkbox" value="on">
+
+<input type="button" id="rebuild" value="Reset" 
+onclick="
+    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+	    showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+  " >
+
+RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >
+
+</div>
+
+<div>
+  <script>
+    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+  </script>
+<div>
+	
+		</body>
+</html>

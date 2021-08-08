@@ -743,7 +743,7 @@ function buildChart2(range,forecast) {
                         var chart = this.series.chart;
                         var numPred=parseInt(document.getElementById('pred').value);        
                         fc.xAxis[0].update({
-                categories: buildTimeDataSet(dailyCases,startDate,numPred)
+                categories: buildTimeDataSet(dailyCases,startDate,numPred+10)
             });
 
                 var currentX=this.x+1;

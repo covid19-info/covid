@@ -643,7 +643,7 @@ function buildChart2(range,forecast) {
 
   onDay=dailyCases.length;
   
-  dstime=   buildTimeDataSet(dailyCases,startDate,predictDays);
+  dstime=   buildTimeDataSet(dailyCases,startDate,predictDays+15);
   dsHolidays  = buildHolidaysDataSet(startDate,dstime,holidaysList);
   dsHolidaysWeeks= buildHolidaysWeeks(startDate,dsHolidays);
   dsmoving= movingAverage(dailyCases,calcRecur,true);

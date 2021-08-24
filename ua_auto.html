@@ -527,8 +527,10 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
       }  else {
         currReal=realDataSet[i];
       }
-      if ((i<realDataSet.length) && (i>(realDataSet.length-7)))
-      {
+ //     if ((i<realDataSet.length) && (i>(realDataSet.length-7)))
+        if (i<realDataSet.length)
+   
+	   {
  //         if (((realDataSet[i]==null) || (realDataSet[i]<1000)) && (realDataSet.length-i<8)) {
             if ((realDataSet[i]==null) || (realDataSet[i]<1000)) {
   

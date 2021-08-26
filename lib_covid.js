@@ -458,26 +458,18 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
       }  else {
         currReal=realDataSet[i];
       }
- //     if ((i<realDataSet.length) && (i>(realDataSet.length-7)))
-        if (i<realDataSet.length)
-   
-	   {
- //         if (((realDataSet[i]==null) || (realDataSet[i]<1000)) && (realDataSet.length-i<8)) {
-            if ((realDataSet[i]==null) || (realDataSet[i]<1000)) {
-  
-	      nullCount=nullCount+1;
-        
-          } 
-     }
+
 
       tempStr=tempStr+'<td>'+currReal+'</td>';
       realTmp.push(currReal); 
     }
   }
 
-  if (nullCount>3) {
+
+   ma7 = buildMovingDataSet(realDataSet);
+   if (ma7[forecastDay]<1000) {
       mistakeMessage=mistakeMessage +" Not outbrake/epidemic. Endemic status. ";
-  }
+   }
 
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  
   

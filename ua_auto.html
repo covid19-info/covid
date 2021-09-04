@@ -101,15 +101,16 @@ xmlhttp.onreadystatechange = function() {
     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
       showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
 
-  }
-if (this.readyState == 4 && this.status == 502) {
- countryName = 'Ukraine <br> Update: ' +   new Date(document.lastModified);
-	
-mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+  } else {
+    countryName = 'Ukraine <br> Update: ' +   new Date(document.lastModified);
+     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
       showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
 
-}	
+ 
+  
+  }
 };
+	
 xmlhttp.ontimeout = function (e) {
  countryName = 'Ukraine <br> Update: ' +   new Date(document.lastModified);
 

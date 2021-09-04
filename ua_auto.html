@@ -104,7 +104,12 @@ xmlhttp.onreadystatechange = function() {
 
   }
 };
-
+xmlhttp.ontimeout = function (e) {
+  mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+  
+};
+	
 xmlhttp.timeout = 20;
 xmlhttp.open("GET", url, true);
 xmlhttp.send();

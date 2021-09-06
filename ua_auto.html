@@ -102,24 +102,24 @@ xmlhttp.onreadystatechange = function() {
       showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
 
   } else {
-//    countryName = 'Ukraine <br> Online data unavailable. Manual update: ' +   new Date(document.lastModified);
-//     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
-//      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+    countryName = 'Ukraine <br> Online data unavailable. Manual update: ' +   new Date(document.lastModified);
+     mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
 
  
   
   }
 };
 	
-// xmlhttp.ontimeout = function (e) {
-// countryName = 'Ukraine <br> Online data unavailable. Manual update: ' +   new Date(document.lastModified);
+ xmlhttp.ontimeout = function (e) {
+ countryName = 'Ukraine <br> Online data unavailable. Manual update: ' +   new Date(document.lastModified);
 
-//	mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
-//      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+	mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
   
-// };
+ };
 	
-// xmlhttp.timeout = 20;
+ xmlhttp.timeout = 20;
 xmlhttp.open("GET", url, true);
 xmlhttp.send();
 

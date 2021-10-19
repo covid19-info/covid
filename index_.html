@@ -1,0 +1,220 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cases GLOBAL</title>
+
+		<style type="text/css">
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 360px; 
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+	font-family: Verdana, sans-serif;
+	border-collapse: collapse;
+	border: 1px solid #EBEBEB;
+	margin: 10px auto;
+	text-align: center;
+	width: 100%;
+	max-width: 500px;
+}
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+.highcharts-data-table th {
+	font-weight: 600;
+    padding: 0.5em;
+}
+.highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+    padding: 0.5em;
+}
+.highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+
+		</style>
+	</head>
+	<body>
+
+<script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/mapdata/custom/world-palestine-lowres.js"></script>
+
+
+
+<script src="highcharts.js"></script>
+<script  src="./PolynomialRegression.js"></script>
+
+<script src="big.js"></script>
+<script src="ssci.js"></script>
+<script src="lib_covid.js"></script>
+
+<script src="customEvents.js"></script>
+
+<figure class="highcharts-figure">
+
+ <div id="container_map"></div>
+    <div id="container"></div>
+
+
+  	
+    <p class="highcharts-description">
+        
+    </p>
+</figure>
+
+
+
+
+<script type="text/javascript">
+
+
+
+// Create the chart
+
+function buildChartMap() {
+
+fc = Highcharts.mapChart('container_map', {
+    chart: {
+        map: 'custom/world-palestine-lowres',
+        borderWidth: 0
+    },
+
+    title: {
+        text: 'Covid trends by country'
+    },
+    
+    subtitle: {
+        text: 'Click by highlight country for detail forecast'
+    },
+    
+    legend: {
+        enabled: false
+    },
+    credits: {
+            enabled: false
+    },
+    mapNavigation: {
+        enabled: true,
+        buttonOptions: {
+            verticalAlign: 'bottom'
+        }
+    },
+
+    plotOptions: {
+    series: {
+      events: {
+        click: function(e) {
+          const url = e.target.point.options['hc-key']+".html";
+          console.log(e.target.point);
+          location.href= url;
+          }
+        }
+      }
+    },
+
+    series: [{
+        name: 'Country',
+        data: [
+            ['us', 1],
+            ['ru', 1],
+            ['ua', 1],
+            ['pl', 1],
+            ['br', 1]
+        ],
+        dataLabels: {
+            enabled: true,
+            color: '#FFFFFF',
+            formatter: function () {
+                if (this.point.value) {
+                    return this.point.name;
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '',
+            pointFormat: '{point.name}'
+        }
+    }]
+});
+
+ return fc;
+};
+
+
+ mm= buildChartMap();
+
+
+
+	
+
+
+var dstime=[];
+startDate= "2020-01-22";
+var dailyCases =                                    [null,271,475,701,787,1784,1479,1763,2016,2138,2626,2857,3253,3927,3728,3184,3453,2685,3004,2569,2050,14180,5175,2681,2132,2158,2031,1880,534,1034,1058,1038,629,992,861,1135,1455,1817,2198,2627,2605,3299,3170,4277,5081,5720,5866,7188,8696,11222,14240,16580,17203,19238,20575,23179,27321,32132,38907,34092,36887,44593,45961,49773,62160,67191,67795,61452,64823,75617,78346,79457,86386,82424,74116,76087,83580,89110,89999,97946,85662,76457,76475,80482,87706,87678,91199,85322,78746,83891,82351,85229,87171,98503,91841,75507,71057,79635,88690,89870,95782,83470,82500,81335,84230,97210,97028,97433,88923,80851,73706,89621,92671,98641,102971,97722,83756,92238,99597,106094,109780,110250,102810,98429,92285,95670,110184,120326,129733,127025,111457,103694,120340,123960,134239,133786,131668,117076,110372,125017,139962,141852,145547,138011,126853,128601,149015,151258,145785,186694,162350,134402,143512,169465,179983,186417,199587,184403,168227,163495,183773,204639,216267,219617,201295,180619,176509,216690,221351,231246,243401,223314,202107,196961,228633,242260,254165,245392,233003,223375,204952,246733,285826,279668,293165,267598,223997,218182,255582,294911,290791,294910,265343,224288,202078,260766,278391,287764,287372,277365,226719,220027,274816,294688,291072,294378,270764,220386,205235,265571,280876,277162,268535,272933,216886,219422,263300,282305,282019,294443,269942,229336,250872,268536,292922,294494,310900,282817,243352,206448,252133,295904,308304,321994,296374,256068,250785,288614,314234,318208,327209,304468,260336,238907,283707,322585,319057,326197,309203,262161,240118,294749,322184,326959,331391,306842,259457,273473,317475,353706,361418,364753,377900,292232,278794,325794,388006,404330,419456,398982,345518,345155,395445,447889,484862,495176,477612,429564,415571,469991,517937,550261,575536,504479,466939,472412,503041,576531,627544,632230,633476,501595,486282,573395,629220,655731,663009,606772,515165,502172,577462,623845,665365,669417,613094,522428,535926,575353,643422,623830,609731,597604,524416,497490,594469,647563,692573,693681,647771,548647,527394,613614,662390,700821,712090,660771,549973,535366,608188,729385,737520,720157,642768,560731,543182,623362,696100,698670,539214,470961,446870,504904,643525,735555,762702,641077,569902,540812,567180,721392,806696,842795,840963,770864,639880,594077,687307,746249,752879,758175,679952,557847,480905,595760,666646,651470,638475,603029,481591,441917,533049,589919,598188,583213,531234,416015,393320,456581,487496,506589,494716,442955,361209,322437,390273,442151,443761,427510,387654,303132,265227,346177,397452,402062,411169,385502,319742,287635,378363,443765,448805,435534,397639,320603,296439,372912,445368,450267,453374,414264,378450,294495,394440,468960,482226,493507,453041,376195,339770,455398,534808,552133,558002,517492,436256,427187,505492,590099,634376,633893,595746,501101,460610,548084,646336,706152,651721,567295,551222,481051,635944,689530,746588,791705,720600,652498,590011,742001,813525,843381,836831,802818,729512,661007,829852,887801,889392,901473,844145,744924,676646,836818,892556,903549,876230,816011,697286,673820,783978,849579,861128,841239,796347,665747,611872,716439,756230,746896,702091,647365,549249,538070,617120,665020,657104,625089,583650,490386,445011,527002,562284,538568,510402,501808,414817,368856,450733,492055,476781,421827,410873,339548,315402,364574,423958,438513,416407,382147,310336,303634,373189,401812,390680,405649,368570,305074,281150,378019,434229,406682,413133,381967,323220,318071,384317,398416,434356,441578,398796,354143,348758,434811,464087,488817,497037,449467,402210,399829,515455,557519,567742,566961,526814,494326,434874,519821,565751,573440,583488,546495,494786,465212,605046,665365,675574,654928,597079,547222,502407,623718,694287,716784,706726,642670,569058,525252,659019,707749,724001,732021,648817,563319,536221,670668,709856,746630,719989,638550,562943,532609,678427,737438,735276,721932,644077,557808,542487,628259,695569,693487,674964,584691,538760,504369,540332,612751,626130,605499,553872,488091,451127,526783,571475,587835,576109,492042,428757,412295,487693,533275,524573,509100,445074,396764,383439,440277,492711,499494,480720,409373,357680,350695,421335,457998,470352,453099,395608,348829,335485,400083]           ;
+			
+var holidaysList=[];
+
+
+var dvHWS=[];
+var dsHolidays=[];
+var dsHolidaysWeeks=[];
+
+var countryName = 'WORLDWIDE';
+//<br> Update: ' +   new Date(document.lastModified);
+
+
+
+
+
+
+
+</script>
+
+
+
+<div align="center" id="tableForecast"></div>
+
+<div align="center">
+Forecast (days)       <input id="pred"      name="pred"       type="number" size="3" value="14" min="7"  max="42" step="7"  >
+Back days (data use)  <input id="calcRange" name="calcRange"  type="number" size="3" value="42" min="14" max="42" step="7"  >
+
+<label for="autoSet">Auto</label>
+<input id="autoSet" name="autoSet"  type="checkbox" value="on">
+
+<input type="button" id="rebuild" value="Reset" 
+onclick="
+    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+	    showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+  " >
+
+RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >
+
+</div>
+
+<div>
+  <script>
+    mm = buildChart2(parseInt(document.getElementById('calcRange').value),parseInt(document.getElementById('pred').value));
+      showDataTable(buildTimeDataSet(dailyCases,startDate,parseInt(document.getElementById('pred').value)),dailyCases,dvHWS,dailyCases.length-1,dsHolidays);
+  </script>
+</div>
+
+   
+
+<script type="text/javascript">
+
+
+
+</script> 
+
+
+</body>
+</html>

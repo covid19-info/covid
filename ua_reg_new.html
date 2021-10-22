@@ -43,12 +43,6 @@
 		</style>
 	</head>
 	<body>
-
-<script src="https://code.highcharts.com/maps/highmaps.js"></script>
-<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/mapdata/countries/ua/ua-all.js"></script>
-
-
 <script src="highcharts.js"></script>
 
 <script  src="./PolynomialRegression.js"></script>
@@ -61,245 +55,76 @@
 
 <figure class="highcharts-figure">
 
-<button> <a href="index.html">HOME</a> </button>
+<button> <a href="ua.html">HOME</a> </button>
 
-     <div id="container_map"></div>
     <div id="container"></div>
-    
-
+    <p class="highcharts-description">
+        
+    </p>
 </figure>
 
 	
 <script type="text/javascript">
 
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
 
-
-
-
-
-
-var rnbo_map = [
-    ['ua-my', 4911,2377230],
-    ['ua-ks', 4902,1027913],
-    ['ua-kc', 4909,2967360],
-    ['ua-zt', 4914,1208212],
-    ['ua-sm', 4899,1068247],
-    ['ua-dt', 4912,4131808],
-    ['ua-dp', 4913,3176648],
-    ['ua-kk', 4901,2658461],
-    ['ua-lh', 4894,2135913],
-    ['ua-pl', 4897,1386978],
-    ['ua-zp', 4891,1687401],
-  
- // ['ua-sc', 0,385998],
-//  ['ua-kr', 0,1968550],
-
-    ['ua-ch', 4906,991294],
-    ['ua-rv', 4898,1152961],
-    ['ua-cv', 4905,901632 ],
-    ['ua-if', 4892,1368097],
-    ['ua-km', 4903,1254702],
-    ['ua-lv', 4895,2512084],
-    ['ua-tp', 4900,1038695],
-    ['ua-zk', 4915,1253791],
-    ['ua-vo', 4908,1031421],
-    ['ua-ck', 4904,1192137],
-    ['ua-kh', 4893,933109],
-    ['ua-kv', 4910,1781044],
-    ['ua-mk', 4896,1119862],
-    ['ua-vi', 4907,1545416],
-    ['ua-sc', 0,385998],
-    ['ua-kr', 0,1968550]
-
-
-];
-
-var data0 = [
-    ['ua-my', 0],
-    ['ua-ks', 0],
-    ['ua-kc', 0],
-    ['ua-zt', 0],
-    ['ua-sm', 0],
-    ['ua-dt', 0],
-    ['ua-dp', 0],
-    ['ua-kk', 0],
-    ['ua-lh', 0],
-    ['ua-pl', 0],
-    ['ua-zp', 0],
-
- //   ['ua-sc', 0],
- //   ['ua-kr', 0],
-  
-    ['ua-ch', 0],
-    ['ua-rv', 0],
-    ['ua-cv', 0],
-    ['ua-if', 0],
-    ['ua-km', 0],
-    ['ua-lv', 0],
-    ['ua-tp', 0],
-    ['ua-zk', 0],
-    ['ua-vo', 0],
-    ['ua-ck', 0],
-    ['ua-kh', 0],
-    ['ua-kv', 0],
-    ['ua-mk', 0],
-    ['ua-vi', 0]
-];
-
-
-var xmlhttp1 = new XMLHttpRequest();
-
-var yourDate = new Date();
-
-
-   var url1 = "https://api-covid19.rnbo.gov.ua/data?to="+yourDate.toISOString().split('T')[0];
- // var url = "https://api-covid19.rnbo.gov.ua/data?to=2021-04-04";
-
- //  var url = "https://api-covid19.rnbo.gov.ua/data?to=2021-08-10";
-
-
-xmlhttp1.onreadystatechange = function() {
-  if (this.readyState == 4 && this.status == 200) {
-    var myArr = JSON.parse(this.responseText);
-
- for ( i = 0; i < data0.length; i++) {
-    console.log(Object.values(data0[i])[0]); 
-         
-    for ( j = 0; j < myArr.ukraine.length; j++) {
-     // console.log(myArr.ukraine[j].country);
- 
-     if (myArr.ukraine[j].country==Object.values(rnbo_map[i])[1]) {
-        data0[i] = [Object.values(rnbo_map[i])[0],Math.round((myArr.ukraine[j].delta_confirmed/Object.values(rnbo_map[i])[2])*100000)]; 
- //       console.log(myArr.ukraine[j].delta_confirmed);
-      } 
-   }
+var reg = urlParams.get('reg')
+if (reg == null) {
+  reg='ua-kc';
 }
 
 
 
 
+var rnbo_map = [
+    ['ua-my', 4911,"Odessa Oblast"],
+    ['ua-ks', 4902,"Kherson Oblast"],
+    ['ua-kc', 4909,"Kiev City"],
+    ['ua-zt', 4914,"Zhytomyr Oblast"],
+    ['ua-sm', 4899,"Sumy Oblast"],
+    ['ua-dt', 4912,"Donetsk Oblast"],
+    ['ua-dp', 4913,"Dnipropetrovsk Oblast"],
+    ['ua-kk', 4901,"Kharkiv Oblast"],
+    ['ua-lh', 4894,"Luhansk Oblast"],
+    ['ua-pl', 4897,"Poltava Oblast"],
+    ['ua-zp', 4891,"Zaporizhia Oblast"],
+  
+ // ['ua-sc', 0,""],
+//  ['ua-kr', 0,v],
 
+    ['ua-ch', 4906,"Chernihiv Oblast"],
+    ['ua-rv', 4898,"Rivne Oblast"],
+    ['ua-cv', 4905,"Chernivtsi Oblast" ],
+    ['ua-if', 4892,"Ivano-Frankivsk Oblast"],
+    ['ua-km', 4903,"Khmelnytskyi Oblast"],
+    ['ua-lv', 4895,"Lviv Oblast"],
+    ['ua-tp', 4900,"Ternopil Oblast"],
+    ['ua-zk', 4915,"Zakarpattia Oblast"],
+    ['ua-vo', 4908,"Volyn Oblast"],
+    ['ua-ck', 4904,"Cherkasy Oblast"],
+    ['ua-kh', 4893,"Kirovohrad Oblast"],
+    ['ua-kv', 4910,"Kiev Oblast"],
+    ['ua-mk', 4896,"Mykolaiv Oblast"],
+    ['ua-vi', 4907,"Vinnytsia Oblast"],
+    ['ua-sc', 0,"Sevastopol City"],
+    ['ua-kr', 0,"Crimea"]
+];
 
-mm= buildChart(data0);
-
- }
-//console.log(d1);
- 
-};
-	
-
-
-xmlhttp1.open("GET", url1, true);
-xmlhttp1.send();
-
-//mm= buildChart(data0);
-
-
-
-
-
-function buildChart(data_) {
-
-fc = Highcharts.mapChart('container_map', {
-    chart: {
-        map: 'countries/ua/ua-all'
-    },
-
-    title: {
-        text: 'Ukraine'
-    },
-
-    subtitle: {
-        text: ''
-    },
-    
-    legend: {
-        enabled: true
-    },
-
-    credits: {
-            enabled: false
-    },
-
-    mapNavigation: {
-        enabled: true,
-        buttonOptions: {
-            verticalAlign: 'bottom'
-        }
-    },
-
-    colorAxis: {
- //           stops: [
- //           [0, 'black'],
- //           [1, '#00FF00'],
- //           [10, '#FF0000']
- //       ],
-//            min: 1,
-//            max: 1000,
-//            type: 'logarithmic',
-//            minColor: '#00FF00',
-//            maxColor: '#FF0000',
-//            lineColor: 'black',
-//            lineWidth: 10
-   
-// dataClasses: [{
-//                        from: 0,
-//                        to: 0,
-//                        color: 'black',
-//                        name: 'Clinton'
-//                    }],
-            min: 1,
-//            max: 50,
-//            type: 'logarithmic',
-            minColor: '#10FF00',
-            maxColor: '#FF0000'
-//            minColor: 'green',
-//            maxColor: 'red'
-
-
-
-     },
-    plotOptions: {
-    series: {
-      events: {
-        click: function(e) {
-//          const url = e.target.point.options['hc-key']+".html";
-        const url = "ua_reg_new.html?reg="+e.target.point.options['hc-key'];       
-        console.log(e.target.point);
-          location.href= url;
-          }
-        }
-      }
-    },
-
-    series: [{
-        data: data_,
-
-       keys: ['hc-key', 'value'],
-       joinBy: 'hc-key',
-        name: 'Daily per 100000',
-        states: {
-            hover: {
-                color: '#BADA55'
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            format: '{point.name}'
-        }
-    }]
-});
- return fc;
-};
+  regRNBO=4911;
+  for ( i = 0; i < rnbo_map.length; i++) {
+    if (Object.values(rnbo_map[i])[0]==reg) {
+        regRNBO=Object.values(rnbo_map[i])[1];
+        countryName=Object.values(rnbo_map[i])[2];
+        break;
+    }
+  }
 
 
 
 
+// var  countryName= 'Ukraine';
 
-
-
-
-var  countryName= 'Ukraine'
 
 var dstime=[];
 
@@ -321,7 +146,7 @@ var dsHolidaysWeeks=[];
 document.getElementById("container").innerHTML='Loading data...';
 			
 var xmlhttp = new XMLHttpRequest();
-var url = "https://api-covid19.rnbo.gov.ua/charts/main-data?mode=ukraine";
+var url = "https://api-covid19.rnbo.gov.ua/charts/main-data?mode=ukraine&country="+regRNBO;
 
 xmlhttp.onreadystatechange = function() {
   if (this.readyState == 4 && this.status == 200) {
@@ -363,12 +188,6 @@ xmlhttp.send();
 </script>
 
 
-
-
-
-
-
-
 <div align="center" id="tableForecast"></div>
 
 <div align="center">
@@ -386,13 +205,9 @@ onclick="
 
 RMSE(N)<input id="rmse" name="rmse" type="text" size="3" value="0" disabled >
 
-	<br>
-	<h3> Updated version of the project description with fixed technical issues 
-
-	<a href="ukr_description.pdf" target="_blank">here</a> </h3>
+	
 
 </div>
-
 
 
 	

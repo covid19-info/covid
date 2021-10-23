@@ -468,7 +468,7 @@ function showDataTable(dateDataSet,realDataSet,forecastDataSet,forecastDay,holid
 
    ma7 = buildMovingDataSet(realDataSet);
    if (ma7[forecastDay]<1000) {
-      mistakeMessage=mistakeMessage +" Not outbrake/epidemic. Endemic status. ";
+   //   mistakeMessage=mistakeMessage +" Not outbrake/epidemic. Endemic status. ";
    }
 
   tableStr=tableStr+'<tr><td>Real</td>'+tempStr+'</tr>';  

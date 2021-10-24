@@ -113,10 +113,12 @@ fc = Highcharts.mapChart('container_map', {
     series: {
       events: {
         click: function(e) {
-          const url = e.target.point.options['hc-key']+".html";
-          console.log(e.target.point);
-          location.href= url;
-          }
+	  if (e.target.point.options.value==1) {	
+            const url = e.target.point.options['hc-key']+".html";
+            console.log(e.target.point);
+            location.href= url;
+	    }
+	  }
         }
       }
     },

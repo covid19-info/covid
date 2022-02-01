@@ -617,6 +617,9 @@ function buildChart2(range,forecast) {
 
     series: [{
         name: 'Daily new cases',
+	animation: {
+                duration: 5000
+            },
         data: dailyCases,
         point: {
                 
@@ -661,6 +664,9 @@ function buildChart2(range,forecast) {
     },{
 
         name: 'hws',
+	    animation: {
+                duration: 5000
+            },
        color: 'brown',
         label: {
         enabled: false

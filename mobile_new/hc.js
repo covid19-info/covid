@@ -180,7 +180,7 @@ Highcharts.ajax({
                             enabled: false
                         },
                         title: {
-                            text: null
+                            text: '22'
                         },
                         subtitle: {
                             text: null
@@ -222,9 +222,11 @@ Highcharts.ajax({
                 countryChart.series.slice(0).forEach(function (s) {
                     s.remove(false);
                 });
+                    
                 points.forEach(function (p) {
+                    countryChart.setTitle({text:p.name}); 
                     countryChart.addSeries({
-                        name: p.name,
+                        name: 'confirmed',
                         data: countries[p.code3].data,
                         type: points.length > 1 ? 'line' : 'area'
                     }, false);
@@ -254,6 +256,9 @@ Highcharts.ajax({
 
             subtitle: {
                 text: 'Click countries to view history'
+            },
+            credits: {
+                 enabled: false
             },
 
             mapNavigation: {

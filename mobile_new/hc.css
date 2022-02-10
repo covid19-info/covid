@@ -1,0 +1,23 @@
+* {
+    font-family: sans-serif;
+}
+
+#clearfix{
+  clear:both;
+}
+
+
+#container {
+    float: left;
+    height: auto;
+    width: 100%;
+    margin: 0;
+}
+
+#country-chart {
+    float: left;
+    height: auto;
+    width: 100%;
+    margin: 0;
+}
+

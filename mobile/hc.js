@@ -76,8 +76,70 @@ Highcharts.ajax({
             }
         }
 
+
+//start
       console.log(countries);  
       console.log(data);  
+
+      countries7Days=getWorldNewCasesIn7Days();
+      console.log(countries7Days);
+
+      countriesData=getDailyCases();
+      console.log(countriesData);
+
+       
+
+//   data 
+//   clear data 
+
+      for (let i = 0; i < data.length; i++) {
+          data[i].value=1;
+      }          
+      
+// replace
+      
+      for (let i = 0; i < data.length; i++) {
+         for(let j = 0; j < countries7Days.length; j++) {
+           if  (countries7Days[j][0] !== undefined) { 
+            if  (data[i].code3==countries7Days[j][0]) {
+              data[i].value=countries7Days[j][1];
+              if (data[i].value==0) {data[i].value=1;}
+              exitCicle=true;
+              break; 
+            }
+          }
+         }
+        } 
+      console.log(data);
+  
+    
+  // clear data      
+      for (var key in countries) {
+    // skip loop if the property is from prototype
+        if (!countries.hasOwnProperty(key)) continue;
+
+        var obj = countries[key];
+        obj['data']=[];
+       }
+
+ // fill data         
+      for (var key in countries) {
+    // skip loop if the property is from prototype
+        if (!countries.hasOwnProperty(key)) continue;
+
+        var obj = countries[key];
+        for (let i = 0; i < countriesData.length; i++) {
+          if(countriesData[i][0]==obj['code3']) {
+            obj['data'].push(countriesData[i][1]);
+          } 
+        }
+      }         
+
+
+      console.log(countries);  
+
+// end
+
 
         // Add lower case codes to the data set for inclusion in the tooltip.pointFormat
         var mapData = Highcharts.geojson(Highcharts.maps['custom/world']);
@@ -105,27 +167,53 @@ Highcharts.ajax({
 //
 //                }
 
-                document.querySelector('#info .subheader')
-                    .innerHTML = '<h4>Historical population</h4><small><em>Shift + Click on map to compare countries</em></small>';
+//                document.querySelector('#info .subheader')
+//                    .innerHTML = '<h4>Historical population</h4><small><em>Shift + Click on map to compare countries</em></small>';
 
                 if (!countryChart) {
-                    countryChart = Highcharts.chart('country-chart', {
+//                    countryChart = Highcharts.chart('country-chart', {
+                    countryChart = Highcharts.stockChart('country-chart', {
+                       
+      //                   chart: {
+      //                      height: 500,
+      //                      spacingLeft: 0
+      //                  },
+
                         chart: {
-                            height: 250,
-                            spacingLeft: 0
+                          zoomType: 'x',
+                          resetZoomButton: {
+                            position: {
+                              align: 'left', 
+                              // verticalAlign: 'top', // by default
+                              x: 0,
+                              y: -30
+                            }
+                          }
                         },
+
                         credits: {
                             enabled: false
                         },
                         title: {
-                            text: null
+                            text: ''
                         },
                         subtitle: {
                             text: null
                         },
+                        legend: {
+                          enabled: true
+                        },
+
+
+   //                     xAxis: {
+   //                         tickPixelInterval: 50,
+   //                         crosshair: true
+   //                     },
                         xAxis: {
-                            tickPixelInterval: 50,
-                            crosshair: true
+                            type: 'datetime',
+                            dateTimeLabelFormats: {
+                            day: '%e. %b'
+                          }
                         },
                         yAxis: {
                             title: null,
@@ -143,23 +231,72 @@ Highcharts.ajax({
                                     enabled: false
                                 },
                                 threshold: 0,
-                                pointStart: parseInt(categories[0], 10)
-                            }
+//                                pointStart: parseInt(categories[0], 10)
+                                pointStart: Date.UTC(2020,0,03),
+                                pointInterval: 3600 * 1000 * 24 
+                             }
                         }
                     });
                 }
 
-                countryChart.series.slice(0).forEach(function (s) {
-                    s.remove(false);
-                });
+  //              countryChart.series.slice(0).forEach(function (s) {
+  //                  s.remove(false);
+  //              });
+                while (countryChart.series.length) {
+                    countryChart.series[0].remove();
+                }                    
+
                 points.forEach(function (p) {
+                    countryChart.setTitle({ text: 'Confirmed cases and forecast'}); 
                     countryChart.addSeries({
                         name: p.name,
                         data: countries[p.code3].data,
-                        type: points.length > 1 ? 'line' : 'area'
-                    }, false);
+//                        type: points.length > 1 ? 'line' : 'area'
+                       type: 'line'
+   
+                   }, false);
+
+
+
+  
+  dailyCases=countries[p.code3].data;
+  calcRecur=7;
+  onDay=dailyCases.length;
+  startDate="2020-01-03";
+  predictDays=7;
+  
+  dstime=   buildTimeDataSet(dailyCases,startDate,predictDays+15);
+  dsmoving= movingAverage(dailyCases,calcRecur,true);
+  bestStartInfo=    findBestStart(dailyCases,onDay);
+  onDay=bestStartInfo[0];
+
+  predictDays=predictDays+(dailyCases.length-onDay);
+ 
+  dvHWS=    buildHWSDataSet(dailyCases,predictDays,onDay, parseInt(bestStartInfo[1]));
+  dvHWS =   replaceMinus(dvHWS);
+                
+  //              calcRecur=7;
+  //              dvHWS=buildHWSDataSet(countries[p.code3].data,calcRecur,200, 15);                        
+ //               dsmoving= movingAverage(countries[p.code3].data,calcRecur,true);
+ //               dvHWS = replaceMinus(dvHWS);
+   
+                countryChart.addSeries({
+                        name: p.code3+'(fc)',
+                        data: dvHWS,
+                          type: 'line'
+  
+                   }, false);
+
+           
+                countryChart.addSeries({
+                        name: p.code3+'(7dm)',
+                        data: dsmoving,
+                        type: 'line'
+                   }, false);
                 });
+                                
                 countryChart.redraw();
+
 
             } else {
                 document.querySelector('#info #flag').className = '';
@@ -175,25 +312,58 @@ Highcharts.ajax({
         mapChart = Highcharts.mapChart('container', {
 
             title: {
-                text: 'Population history by country'
+                text: 'Coronavirus by country'
             },
+            chart: {
+                            height: 500,
+                            spacingLeft: 0
+                        },
 
             subtitle: {
-                text: 'Source: <a href="http://data.worldbank.org/indicator/SP.POP.TOTL/countries/1W?display=default">The World Bank</a>'
+                text: 'Click countries to view data and forecast'
+            },
+            credits: {
+                 enabled: false
             },
 
             mapNavigation: {
                 enabled: true,
                 buttonOptions: {
-                    verticalAlign: 'bottom'
+                  theme: {
+                    fill: 'white',
+                    'stroke-width': 1,
+                    stroke: 'silver',
+                    r: 0,
+                    states: {
+                        hover: {
+                            fill: '#a4edba'
+                        },
+                        select: {
+                            stroke: '#039',
+                            fill: '#a4edba'
+                        }
+                      }
+                  },
+                verticalAlign: 'bottom',
+                width:50,
+                height:50,
+              },
+              buttons:{
+                zoomOut:{
+                y:58
                 }
+              }
             },
 
+
             colorAxis: {
-                type: 'logarithmic',
-                endOnTick: false,
-                startOnTick: false,
-                min: 50000
+                 type: 'logarithmic',
+ //               endOnTick: false,
+ //               startOnTick: false,
+                min: 1,
+                max:5000,
+                minColor: '#10FF00',
+                maxColor: '#FF0000'
             },
 
             tooltip: {
@@ -204,7 +374,7 @@ Highcharts.ajax({
                 data: data,
                 mapData: mapData,
                 joinBy: ['iso-a3', 'code3'],
-                name: 'Current population',
+                name: 'Cases per 100000 last 7 days',
                 allowPointSelect: true,
                 cursor: 'pointer',
                 states: {
@@ -219,6 +389,6 @@ Highcharts.ajax({
         });
 
         // Pre-select a country
-        mapChart.get('us').select();
+        mapChart.get('ae').select();
     }
 });

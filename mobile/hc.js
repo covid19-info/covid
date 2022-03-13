@@ -389,6 +389,6 @@ Highcharts.ajax({
         });
 
         // Pre-select a country
-        mapChart.get('ae').select();
+        mapChart.get('us').select();
     }
 });
